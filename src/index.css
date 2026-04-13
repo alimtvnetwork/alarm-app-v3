@@ -226,6 +226,34 @@
     --snooze: 38 80% 55%;
     --dismiss: 145 55% 42%;
   }
+
+  /* ── Skin: VS Code ── */
+  .skin-vscode {
+    --background: 0 0% 12%;
+    --foreground: 0 0% 83%;
+    --card: 0 0% 15%;
+    --card-foreground: 0 0% 83%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 83%;
+    --primary: 207 90% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 19%;
+    --secondary-foreground: 0 0% 83%;
+    --muted: 0 0% 19%;
+    --muted-foreground: 0 0% 55%;
+    --accent: 207 70% 50%;
+    --accent-foreground: 0 0% 95%;
+    --border: 0 0% 22%;
+    --input: 0 0% 22%;
+    --ring: 207 90% 54%;
+    --clock-face: 0 0% 15%;
+    --clock-hand: 0 0% 83%;
+    --clock-tick: 207 90% 54%;
+    --flip-clock-bg: 0 0% 10%;
+    --flip-clock-text: 0 0% 90%;
+    --snooze: 38 80% 55%;
+    --dismiss: 142 60% 45%;
+  }
 }
 
 @layer base {

@@ -60,7 +60,7 @@ function applyAccentColor(hex: string): void {
   root.style.setProperty("--ring", hsl);
 }
 
-const SKIN_CLASSES = ["skin-midnight", "skin-sunrise", "skin-ocean", "skin-forest"];
+const SKIN_CLASSES = ["skin-midnight", "skin-sunrise", "skin-ocean", "skin-forest", "skin-vscode"];
 
 function applySkin(skin: string): void {
   const root = document.documentElement;

@@ -36,6 +36,7 @@ const SKIN_OPTIONS = [
   { value: "sunrise", label: "Sunrise", colors: ["#f5e6d8", "#e05c2d", "#ecd5c2", "#d99040"] },
   { value: "ocean", label: "Ocean", colors: ["#1a2c33", "#33b8a8", "#d4e6e2", "#408f85"] },
   { value: "forest", label: "Forest", colors: ["#192319", "#4da652", "#d6e8d6", "#3d8040"] },
+  { value: "vscode", label: "VS Code", colors: ["#1e1e1e", "#007acc", "#d4d4d4", "#2d2d2d"] },
 ];
 
 const Personalization = () => {
