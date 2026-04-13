@@ -338,6 +338,62 @@
     --snooze: 40 71% 73%;
     --dismiss: 92 28% 65%;
   }
+
+  /* ── Skin: Solarized Dark ── */
+  .skin-solarized-dark {
+    --background: 192 100% 11%;
+    --foreground: 44 87% 94%;
+    --card: 192 81% 14%;
+    --card-foreground: 44 87% 94%;
+    --popover: 192 100% 11%;
+    --popover-foreground: 44 87% 94%;
+    --primary: 175 59% 40%;
+    --primary-foreground: 44 87% 94%;
+    --secondary: 192 63% 18%;
+    --secondary-foreground: 44 87% 94%;
+    --muted: 192 63% 18%;
+    --muted-foreground: 180 7% 60%;
+    --accent: 18 89% 55%;
+    --accent-foreground: 44 87% 94%;
+    --border: 192 50% 22%;
+    --input: 192 50% 22%;
+    --ring: 175 59% 40%;
+    --clock-face: 192 81% 14%;
+    --clock-hand: 44 87% 94%;
+    --clock-tick: 175 59% 40%;
+    --flip-clock-bg: 192 100% 9%;
+    --flip-clock-text: 44 87% 94%;
+    --snooze: 45 100% 50%;
+    --dismiss: 68 100% 30%;
+  }
+
+  /* ── Skin: Solarized Light ── */
+  .skin-solarized-light {
+    --background: 44 87% 94%;
+    --foreground: 192 81% 14%;
+    --card: 46 42% 88%;
+    --card-foreground: 192 81% 14%;
+    --popover: 44 87% 94%;
+    --popover-foreground: 192 81% 14%;
+    --primary: 175 59% 40%;
+    --primary-foreground: 44 87% 94%;
+    --secondary: 46 30% 82%;
+    --secondary-foreground: 192 81% 14%;
+    --muted: 46 30% 82%;
+    --muted-foreground: 180 7% 40%;
+    --accent: 18 89% 55%;
+    --accent-foreground: 44 87% 94%;
+    --border: 46 20% 76%;
+    --input: 46 20% 76%;
+    --ring: 175 59% 40%;
+    --clock-face: 46 42% 88%;
+    --clock-hand: 192 81% 14%;
+    --clock-tick: 175 59% 40%;
+    --flip-clock-bg: 192 81% 14%;
+    --flip-clock-text: 44 87% 94%;
+    --snooze: 45 100% 50%;
+    --dismiss: 68 100% 30%;
+  }
 }
 
 @layer base {
