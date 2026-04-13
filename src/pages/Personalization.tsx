@@ -98,7 +98,7 @@ const Personalization = () => {
             </p>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end justify-between">
+            <div className="flex items-end gap-1 overflow-x-auto pb-2 scrollbar-hide">
               {SKIN_OPTIONS.map(({ value, label, colors }) => {
                 const isActive = (settings.ThemeSkin ?? "default") === value;
                 return (
