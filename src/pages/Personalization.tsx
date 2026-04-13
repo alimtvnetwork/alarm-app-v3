@@ -106,7 +106,7 @@ const Personalization = () => {
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => updateSettings({ ThemeSkin: value })}
-                        className={`flex flex-col items-center gap-1 rounded-2xl p-2 transition-all ${
+                        className={`flex flex-col items-center gap-1 rounded-2xl p-2 shrink-0 transition-all ${
                           isActive
                             ? "bg-secondary/80 shadow-sm"
                             : "hover:bg-secondary/40"
