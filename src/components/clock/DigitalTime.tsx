@@ -1,25 +1,62 @@
 /**
- * DigitalTime — Flip-clock style digital time display.
- * Shows HOURS : MINUTES on a dark card with AM/PM badge.
+ * DigitalTime — Animated flip-clock style digital time display.
+ * Each digit animates on change. Hours get a special glow animation.
+ * AM/PM badge is vertically centered.
  */
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useAlarmStore } from "@/stores/alarm-store";
 import { getTimeParts } from "@/lib/timezone-clock";
 import type { Alarm } from "@/types/alarm";
 
+interface AnimatedDigitProps {
+  digit: string;
+  variant: "second" | "minute" | "hour";
+}
+
+const AnimatedDigit = ({ digit, variant }: AnimatedDigitProps) => {
+  const prevRef = useRef(digit);
+  const [isAnimating, setIsAnimating] = useState(false);
+
+  useEffect(() => {
+    if (prevRef.current !== digit) {
+      prevRef.current = digit;
+      setIsAnimating(true);
+      const timer = setTimeout(() => setIsAnimating(false), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [digit]);
+
+  const animationClass = isAnimating
+    ? variant === "hour"
+      ? "animate-digit-hour-glow"
+      : variant === "minute"
+        ? "animate-digit-roll"
+        : "animate-digit-flip"
+    : "";
+
+  return (
+    <span className={`inline-block tabular-nums transition-colors ${animationClass}`}>
+      {digit}
+    </span>
+  );
+};
+
 interface FlipSegmentProps {
   value: string;
   label: string;
+  variant: "second" | "minute" | "hour";
 }
 
-const FlipSegment = ({ value, label }: FlipSegmentProps) => (
+const FlipSegment = ({ value, label, variant }: FlipSegmentProps) => (
   <div className="flex flex-col items-center gap-0.5">
-    <span className="text-3xl font-heading font-light tracking-wide text-flip-clock-text leading-none tabular-nums">
-      {value}
-    </span>
+    <div className="text-3xl font-heading font-light tracking-wide text-flip-clock-text leading-none flex">
+      {value.split("").map((char, i) => (
+        <AnimatedDigit key={`${variant}-${i}`} digit={char} variant={variant} />
+      ))}
+    </div>
     <span className="text-[0.5rem] font-body font-medium tracking-[0.15em] uppercase text-flip-clock-text/40">
       {label}
     </span>
@@ -27,7 +64,7 @@ const FlipSegment = ({ value, label }: FlipSegmentProps) => (
 );
 
 const Colon = () => (
-  <span className="text-xl font-heading font-light text-flip-clock-text/25 leading-none mb-3">
+  <span className="text-xl font-heading font-light text-flip-clock-text/25 leading-none mb-3 animate-colon-pulse">
     :
   </span>
 );
@@ -46,7 +83,9 @@ const DigitalTime = () => {
 
   const { hours: h, minutes: m, seconds: s } = getTimeParts(now, timeZone);
 
-  const displayHour = is24Hour ? String(h).padStart(2, "0") : String(h % 12 || 12).padStart(2, "0");
+  const displayHour = is24Hour
+    ? String(h).padStart(2, "0")
+    : String(h % 12 || 12).padStart(2, "0");
   const displayMin = String(m).padStart(2, "0");
   const displaySec = String(s).padStart(2, "0");
   const period = is24Hour ? null : (h >= 12 ? "PM" : "AM");
@@ -58,17 +97,17 @@ const DigitalTime = () => {
       {/* Flip-clock card */}
       <div className="relative w-full max-w-sm rounded-2xl bg-flip-clock-bg px-5 py-5 shadow-lg">
         <div className="flex items-center justify-center gap-3">
-          <FlipSegment value={displayHour} label={t("clock.hoursLabel", "HOURS")} />
+          <FlipSegment value={displayHour} label={t("clock.hoursLabel", "HOURS")} variant="hour" />
           <Colon />
-          <FlipSegment value={displayMin} label={t("clock.minutesLabel", "MINUTES")} />
+          <FlipSegment value={displayMin} label={t("clock.minutesLabel", "MINUTES")} variant="minute" />
           <Colon />
-          <FlipSegment value={displaySec} label={t("clock.secondsLabel", "SECONDS")} />
+          <FlipSegment value={displaySec} label={t("clock.secondsLabel", "SECONDS")} variant="second" />
         </div>
 
-        {/* AM/PM badge */}
+        {/* AM/PM badge — vertically centered */}
         {period && (
-          <div className="absolute top-3 right-3 rounded-lg bg-primary px-2.5 py-1.5">
-            <span className="text-xs font-heading font-semibold tracking-wider text-flip-clock-text">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 rounded-lg bg-primary px-2.5 py-1.5">
+            <span className="text-xs font-heading font-semibold tracking-wider text-primary-foreground">
               {period}
             </span>
           </div>
@@ -95,7 +134,10 @@ const DigitalTime = () => {
   );
 };
 
-function getCountdown(alarms: Alarm[], t: (key: string, opts?: Record<string, unknown>) => string): string | null {
+function getCountdown(
+  alarms: Alarm[],
+  t: (key: string, opts?: Record<string, unknown>) => string,
+): string | null {
   const now = Date.now();
   let minDiffMs = Infinity;
 
@@ -107,11 +149,13 @@ function getCountdown(alarms: Alarm[], t: (key: string, opts?: Record<string, un
 
   if (minDiffMs === Infinity) return null;
 
-  const totalMin = Math.floor(minDiffMs / 60000);
-  const hours = Math.floor(totalMin / 60);
-  const mins = totalMin % 60;
+  const MINUTE_MS = 60_000;
+  const MINUTES_PER_HOUR = 60;
+  const totalMin = Math.floor(minDiffMs / MINUTE_MS);
+  const hours = Math.floor(totalMin / MINUTES_PER_HOUR);
+  const mins = totalMin % MINUTES_PER_HOUR;
 
-  let timeParts: string[] = [];
+  const timeParts: string[] = [];
   if (hours > 0) timeParts.push(t("clock.hours", { count: hours }));
   if (mins > 0) timeParts.push(t("clock.minutes", { count: mins }));
   if (timeParts.length === 0) timeParts.push(t("clock.minutes", { count: 0 }));

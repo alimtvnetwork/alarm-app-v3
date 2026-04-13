@@ -7,11 +7,19 @@ type SoundGenerator = (ctx: AudioContext, gain: GainNode) => OscillatorNode[];
 
 const BEEP_INTERVAL_MS = 800;
 const BEEP_DURATION_MS = 300;
+const CLASSIC_BEEP_FREQ = 880;
+const CHIME_FREQ = 523.25;
+const BIRD_BASE_FREQ = 1200;
+const BIRD_LFO_FREQ = 6;
+const BIRD_LFO_DEPTH = 300;
+const PULSE_FREQ = 440;
+const DEFAULT_VOLUME = 0.8;
+const GRADUAL_START_VOLUME = 0.01;
 
 function classicBeep(ctx: AudioContext, gain: GainNode): OscillatorNode[] {
   const osc = ctx.createOscillator();
   osc.type = "square";
-  osc.frequency.value = 880;
+  osc.frequency.value = CLASSIC_BEEP_FREQ;
   osc.connect(gain);
   return [osc];
 }
@@ -19,7 +27,7 @@ function classicBeep(ctx: AudioContext, gain: GainNode): OscillatorNode[] {
 function gentleChime(ctx: AudioContext, gain: GainNode): OscillatorNode[] {
   const osc = ctx.createOscillator();
   osc.type = "sine";
-  osc.frequency.value = 523.25;
+  osc.frequency.value = CHIME_FREQ;
   osc.connect(gain);
   return [osc];
 }
@@ -27,11 +35,11 @@ function gentleChime(ctx: AudioContext, gain: GainNode): OscillatorNode[] {
 function natureBirds(ctx: AudioContext, gain: GainNode): OscillatorNode[] {
   const osc = ctx.createOscillator();
   osc.type = "sine";
-  osc.frequency.value = 1200;
+  osc.frequency.value = BIRD_BASE_FREQ;
   const lfo = ctx.createOscillator();
-  lfo.frequency.value = 6;
+  lfo.frequency.value = BIRD_LFO_FREQ;
   const lfoGain = ctx.createGain();
-  lfoGain.gain.value = 300;
+  lfoGain.gain.value = BIRD_LFO_DEPTH;
   lfo.connect(lfoGain);
   lfoGain.connect(osc.frequency);
   osc.connect(gain);
@@ -42,7 +50,7 @@ function natureBirds(ctx: AudioContext, gain: GainNode): OscillatorNode[] {
 function digitalPulse(ctx: AudioContext, gain: GainNode): OscillatorNode[] {
   const osc = ctx.createOscillator();
   osc.type = "sawtooth";
-  osc.frequency.value = 440;
+  osc.frequency.value = PULSE_FREQ;
   osc.connect(gain);
   return [osc];
 }
@@ -67,8 +75,8 @@ export function playAlarmSound(
   const masterGain = ctx.createGain();
   masterGain.connect(ctx.destination);
 
-  const startVolume = isGradualVolume ? 0.01 : 0.8;
-  const endVolume = 0.8;
+  const startVolume = isGradualVolume ? GRADUAL_START_VOLUME : DEFAULT_VOLUME;
+  const endVolume = DEFAULT_VOLUME;
   masterGain.gain.value = startVolume;
 
   if (isGradualVolume) {
