@@ -254,6 +254,90 @@
     --snooze: 38 80% 55%;
     --dismiss: 142 60% 45%;
   }
+
+  /* ── Skin: Dracula ── */
+  .skin-dracula {
+    --background: 231 15% 18%;
+    --foreground: 60 30% 96%;
+    --card: 232 14% 21%;
+    --card-foreground: 60 30% 96%;
+    --popover: 231 15% 18%;
+    --popover-foreground: 60 30% 96%;
+    --primary: 265 89% 78%;
+    --primary-foreground: 231 15% 18%;
+    --secondary: 232 14% 25%;
+    --secondary-foreground: 60 30% 96%;
+    --muted: 232 14% 25%;
+    --muted-foreground: 225 14% 58%;
+    --accent: 135 94% 65%;
+    --accent-foreground: 231 15% 18%;
+    --border: 232 14% 28%;
+    --input: 232 14% 28%;
+    --ring: 265 89% 78%;
+    --clock-face: 232 14% 21%;
+    --clock-hand: 60 30% 96%;
+    --clock-tick: 265 89% 78%;
+    --flip-clock-bg: 231 15% 15%;
+    --flip-clock-text: 60 30% 96%;
+    --snooze: 65 92% 76%;
+    --dismiss: 135 94% 65%;
+  }
+
+  /* ── Skin: Monokai ── */
+  .skin-monokai {
+    --background: 70 8% 15%;
+    --foreground: 60 17% 92%;
+    --card: 70 7% 18%;
+    --card-foreground: 60 17% 92%;
+    --popover: 70 8% 15%;
+    --popover-foreground: 60 17% 92%;
+    --primary: 338 95% 56%;
+    --primary-foreground: 60 17% 98%;
+    --secondary: 70 7% 22%;
+    --secondary-foreground: 60 17% 92%;
+    --muted: 70 7% 22%;
+    --muted-foreground: 50 5% 55%;
+    --accent: 80 76% 53%;
+    --accent-foreground: 70 8% 15%;
+    --border: 70 7% 25%;
+    --input: 70 7% 25%;
+    --ring: 338 95% 56%;
+    --clock-face: 70 7% 18%;
+    --clock-hand: 60 17% 92%;
+    --clock-tick: 338 95% 56%;
+    --flip-clock-bg: 70 8% 12%;
+    --flip-clock-text: 60 17% 92%;
+    --snooze: 54 70% 68%;
+    --dismiss: 80 76% 53%;
+  }
+
+  /* ── Skin: Nord ── */
+  .skin-nord {
+    --background: 220 16% 22%;
+    --foreground: 219 28% 88%;
+    --card: 220 16% 26%;
+    --card-foreground: 219 28% 88%;
+    --popover: 220 16% 22%;
+    --popover-foreground: 219 28% 88%;
+    --primary: 213 32% 52%;
+    --primary-foreground: 219 28% 95%;
+    --secondary: 220 16% 30%;
+    --secondary-foreground: 219 28% 88%;
+    --muted: 220 16% 30%;
+    --muted-foreground: 219 14% 56%;
+    --accent: 179 25% 65%;
+    --accent-foreground: 220 16% 22%;
+    --border: 220 16% 32%;
+    --input: 220 16% 32%;
+    --ring: 213 32% 52%;
+    --clock-face: 220 16% 26%;
+    --clock-hand: 219 28% 88%;
+    --clock-tick: 213 32% 52%;
+    --flip-clock-bg: 220 16% 19%;
+    --flip-clock-text: 219 28% 88%;
+    --snooze: 40 71% 73%;
+    --dismiss: 92 28% 65%;
+  }
 }
 
 @layer base {
