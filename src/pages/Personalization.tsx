@@ -37,6 +37,9 @@ const SKIN_OPTIONS = [
   { value: "ocean", label: "Ocean", colors: ["#1a2c33", "#33b8a8", "#d4e6e2", "#408f85"] },
   { value: "forest", label: "Forest", colors: ["#192319", "#4da652", "#d6e8d6", "#3d8040"] },
   { value: "vscode", label: "VS Code", colors: ["#1e1e1e", "#007acc", "#d4d4d4", "#2d2d2d"] },
+  { value: "dracula", label: "Dracula", colors: ["#282a36", "#bd93f9", "#f8f8f2", "#44475a"] },
+  { value: "monokai", label: "Monokai", colors: ["#272822", "#f92672", "#f8f8f2", "#a6e22e"] },
+  { value: "nord", label: "Nord", colors: ["#2e3440", "#5e81ac", "#d8dee9", "#88c0d0"] },
 ];
 
 const Personalization = () => {
