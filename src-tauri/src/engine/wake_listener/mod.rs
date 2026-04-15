@@ -1,12 +1,12 @@
 // Wake listener — Platform-specific wake detection
 // Detects system sleep/wake to re-evaluate missed alarms.
 
+#[cfg(target_os = "linux")]
+mod linux;
 #[cfg(target_os = "macos")]
 mod macos;
 #[cfg(target_os = "windows")]
 mod windows;
-#[cfg(target_os = "linux")]
-mod linux;
 
 use crate::errors::AlarmAppError;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -94,9 +94,7 @@ pub(crate) fn monitor_uptime_for_sleep(
         let now_wall = SystemTime::now();
 
         let monotonic_elapsed = now_instant.duration_since(last_check);
-        let wall_elapsed = now_wall
-            .duration_since(last_wall)
-            .unwrap_or(Duration::ZERO);
+        let wall_elapsed = now_wall.duration_since(last_wall).unwrap_or(Duration::ZERO);
 
         if wall_elapsed > monotonic_elapsed + sleep_threshold {
             let gap = wall_elapsed - monotonic_elapsed;
