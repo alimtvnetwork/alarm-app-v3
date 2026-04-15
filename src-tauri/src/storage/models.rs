@@ -245,8 +245,13 @@ impl AlarmRow {
             date: row.get("Date")?,
             label: row.get("Label")?,
             is_enabled: row.get::<_, i32>("IsEnabled")? != 0,
-            is_previous_enabled: row.get::<_, Option<i32>>("IsPreviousEnabled")?.map(|v| v != 0),
-            repeat_type: row.get::<_, String>("RepeatType")?.parse().unwrap_or(RepeatType::Once),
+            is_previous_enabled: row
+                .get::<_, Option<i32>>("IsPreviousEnabled")?
+                .map(|v| v != 0),
+            repeat_type: row
+                .get::<_, String>("RepeatType")?
+                .parse()
+                .unwrap_or(RepeatType::Once),
             repeat_days_of_week: row.get("RepeatDaysOfWeek")?,
             repeat_interval_minutes: row.get("RepeatIntervalMinutes")?,
             repeat_cron_expression: row.get("RepeatCronExpression")?,
@@ -258,8 +263,12 @@ impl AlarmRow {
             is_gradual_volume: row.get::<_, i32>("IsGradualVolume")? != 0,
             gradual_volume_duration_sec: row.get("GradualVolumeDurationSec")?,
             auto_dismiss_min: row.get("AutoDismissMin")?,
-            challenge_type: row.get::<_, Option<String>>("ChallengeType")?.and_then(|s| s.parse().ok()),
-            challenge_difficulty: row.get::<_, Option<String>>("ChallengeDifficulty")?.and_then(|s| s.parse().ok()),
+            challenge_type: row
+                .get::<_, Option<String>>("ChallengeType")?
+                .and_then(|s| s.parse().ok()),
+            challenge_difficulty: row
+                .get::<_, Option<String>>("ChallengeDifficulty")?
+                .and_then(|s| s.parse().ok()),
             challenge_shake_count: row.get("ChallengeShakeCount")?,
             challenge_step_count: row.get("ChallengeStepCount")?,
             next_fire_time: row.get("NextFireTime")?,
@@ -270,9 +279,15 @@ impl AlarmRow {
         })
     }
 
-    pub fn is_disabled(&self) -> bool { !self.is_enabled }
-    pub fn is_vibration_off(&self) -> bool { !self.is_vibration_enabled }
-    pub fn is_fixed_volume(&self) -> bool { !self.is_gradual_volume }
+    pub fn is_disabled(&self) -> bool {
+        !self.is_enabled
+    }
+    pub fn is_vibration_off(&self) -> bool {
+        !self.is_vibration_enabled
+    }
+    pub fn is_fixed_volume(&self) -> bool {
+        !self.is_gradual_volume
+    }
 }
 
 // ── AlarmGroupRow ──
