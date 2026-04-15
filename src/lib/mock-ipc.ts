@@ -76,29 +76,29 @@ async function seedIfEmpty(): Promise<void> {
   // Seed settings if empty
   const existingSettings = await db.getAll("Settings");
   if (existingSettings.length === 0) {
-    const rows = settingsObjToRows(DEFAULT_SETTINGS);
-    const tx = db.transaction("Settings", "readwrite");
-    for (const row of rows) {
-      await tx.store.put(row);
-    }
-    await tx.done;
+    await runTransaction(["Settings"], async (tx) => {
+      const rows = settingsObjToRows(DEFAULT_SETTINGS);
+      for (const row of rows) {
+        await tx.objectStore("Settings").put(row);
+      }
+    });
   }
 
   // Seed sample data if no alarms exist
   const existingAlarms = await db.getAll("Alarms");
   if (existingAlarms.length === 0) {
     const { MOCK_ALARMS, MOCK_GROUPS, MOCK_EVENTS } = await import("@/test/fixtures");
-    const tx = db.transaction(["Alarms", "AlarmGroups", "AlarmEvents"], "readwrite");
-    for (const alarm of MOCK_ALARMS) {
-      await tx.objectStore("Alarms").put(alarm as unknown as Record<string, unknown>);
-    }
-    for (const group of MOCK_GROUPS) {
-      await tx.objectStore("AlarmGroups").put(group as unknown as Record<string, unknown>);
-    }
-    for (const event of MOCK_EVENTS) {
-      await tx.objectStore("AlarmEvents").put(event as unknown as Record<string, unknown>);
-    }
-    await tx.done;
+    await runTransaction(["Alarms", "AlarmGroups", "AlarmEvents"], async (tx) => {
+      for (const alarm of MOCK_ALARMS) {
+        await tx.objectStore("Alarms").put(alarm as unknown as Record<string, unknown>);
+      }
+      for (const group of MOCK_GROUPS) {
+        await tx.objectStore("AlarmGroups").put(group as unknown as Record<string, unknown>);
+      }
+      for (const event of MOCK_EVENTS) {
+        await tx.objectStore("AlarmEvents").put(event as unknown as Record<string, unknown>);
+      }
+    });
   }
 }
 
