@@ -411,6 +411,7 @@ Currently uses **localStorage** — data persists in-browser but is not synced a
 |  |  |
 |---|---|
 | **GitHub** | [github.com/ab-mahin](https://github.com/ab-mahin) |
+| **LinkedIn** | [linkedin.com/in/ab-mahin0](https://www.linkedin.com/in/ab-mahin0/) |
 | **Facebook** | [abmahin624460](https://www.facebook.com/abmahin624460/) |
 | **Codeforces** | [codeforces.com/profile/Ab-Mahin](https://codeforces.com/profile/Ab-Mahin) |
 
@@ -427,7 +428,7 @@ Recognized as a **top 1% talent at Crossover** and one of the top software archi
 |  |  |
 |---|---|
 | **Website** | [alimkarim.com](https://alimkarim.com/) · [my.alimkarim.com](https://my.alimkarim.com/) |
-| **LinkedIn** | [linkedin.com/in/alimkarim](https://linkedin.com/in/alimkarim) |
+| **LinkedIn** | [linkedin.com/in/alimkarim](https://my.linkedin.com/in/alimkarim) |
 | **Stack Overflow** | [stackoverflow.com/users/513511/md-alim-ul-karim](https://stackoverflow.com/users/513511/md-alim-ul-karim) |
 | **Google** | [Alim Ul Karim](https://www.google.com/search?q=Alim+Ul+Karim) |
 | **Role** | Chief Software Engineer, [Riseup Asia LLC](https://riseup-asia.com/) |
