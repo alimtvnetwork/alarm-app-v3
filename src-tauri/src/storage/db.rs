@@ -1,5 +1,5 @@
-use rusqlite::{Connection, params};
 use refinery::embed_migrations;
+use rusqlite::{params, Connection};
 
 use crate::errors::AlarmAppError;
 use crate::storage::models::SettingsResponse;

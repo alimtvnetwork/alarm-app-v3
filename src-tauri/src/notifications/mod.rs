@@ -7,7 +7,11 @@ use crate::storage::models::AlarmRow;
 pub fn send_alarm_fired(app: &tauri::AppHandle, alarm: &AlarmRow, is_24_hour: bool) {
     use tauri_plugin_notification::NotificationExt;
 
-    let label = if alarm.label.is_empty() { "Alarm" } else { &alarm.label };
+    let label = if alarm.label.is_empty() {
+        "Alarm"
+    } else {
+        &alarm.label
+    };
     let time_str = format_time(&alarm.time, is_24_hour);
 
     let result = app
