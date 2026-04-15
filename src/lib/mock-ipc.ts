@@ -9,6 +9,7 @@ import type { Alarm, AlarmGroup, AlarmEvent, AlarmSound, Settings, SnoozeState }
 import { DEFAULT_SETTINGS } from "@/types/alarm";
 import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 import { getDB } from "@/lib/indexed-db";
+import { runTransaction } from "@/lib/db-transactions";
 import { MOCK_SOUNDS } from "@/test/fixtures";
 
 // ─── Settings Helpers ────────────────────────────────────────────
