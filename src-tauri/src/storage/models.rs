@@ -344,11 +344,16 @@ impl AlarmEventRow {
         Ok(Self {
             alarm_event_id: row.get("AlarmEventId")?,
             alarm_id: row.get("AlarmId")?,
-            r#type: row.get::<_, String>("Type")?.parse().unwrap_or(AlarmEventType::Fired),
+            r#type: row
+                .get::<_, String>("Type")?
+                .parse()
+                .unwrap_or(AlarmEventType::Fired),
             fired_at: row.get("FiredAt")?,
             dismissed_at: row.get("DismissedAt")?,
             snooze_count: row.get("SnoozeCount")?,
-            challenge_type: row.get::<_, Option<String>>("ChallengeType")?.and_then(|s| s.parse().ok()),
+            challenge_type: row
+                .get::<_, Option<String>>("ChallengeType")?
+                .and_then(|s| s.parse().ok()),
             challenge_solve_time_sec: row.get("ChallengeSolveTimeSec")?,
             sleep_quality: row.get("SleepQuality")?,
             mood: row.get("Mood")?,
@@ -395,8 +400,12 @@ impl Quote {
         })
     }
 
-    pub fn is_not_favorite(&self) -> bool { !self.is_favorite }
-    pub fn is_built_in(&self) -> bool { !self.is_custom }
+    pub fn is_not_favorite(&self) -> bool {
+        !self.is_favorite
+    }
+    pub fn is_built_in(&self) -> bool {
+        !self.is_custom
+    }
 }
 
 // ── StreakData ──
@@ -419,7 +428,9 @@ pub struct StreakCalendarDay {
 }
 
 impl StreakCalendarDay {
-    pub fn is_late(&self) -> bool { !self.is_on_time }
+    pub fn is_late(&self) -> bool {
+        !self.is_on_time
+    }
 }
 
 // ── SettingsResponse ──
