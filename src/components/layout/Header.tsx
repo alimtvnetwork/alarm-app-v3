@@ -28,7 +28,7 @@ const Header = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9 hover:bg-transparent"
+              className="h-9 w-9 hover:bg-transparent hover:text-foreground"
               aria-label={t("header.addAlarm")}
               onClick={handleAddAlarm}
             >
@@ -38,7 +38,7 @@ const Header = () => {
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 hover:bg-transparent"
+            className="h-9 w-9 hover:bg-transparent hover:text-foreground"
             aria-label={t("header.settings")}
             onClick={() => navigate("/settings")}
           >
