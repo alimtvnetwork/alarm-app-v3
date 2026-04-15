@@ -8,12 +8,12 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 
-const COLORS = [
-  "hsl(var(--primary))",
-  "hsl(var(--snooze))",
-  "hsl(var(--dismiss))",
-  "hsl(var(--destructive))",
-];
+const COLORS: Record<string, string> = {
+  Fired: "#E6F14A",
+  Snoozed: "#4C6EF5",
+  Dismissed: "#B197FC",
+  Missed: "#3BC9DB",
+};
 
 interface BreakdownChartProps {
   pieData: { name: string; value: number }[];
@@ -23,18 +23,13 @@ const BreakdownChart = ({ pieData }: BreakdownChartProps) => {
   const { t } = useTranslation();
   const total = pieData.reduce((s, d) => s + d.value, 0);
 
-  // Sort descending so largest bar is outermost
   const radialData = pieData
-    .map((d, i) => {
-      const originalIndex = ["Fired", "Snoozed", "Dismissed", "Missed"].indexOf(d.name);
-      const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
-      return {
-        name: d.name,
-        value: pct,
-        fill: COLORS[originalIndex >= 0 ? originalIndex : i],
-      };
-    })
-    .sort((a, b) => a.value - b.value); // smallest innermost
+    .map((d) => ({
+      name: d.name,
+      value: total > 0 ? Math.round((d.value / total) * 100) : 0,
+      fill: COLORS[d.name] ?? "#888",
+    }))
+    .sort((a, b) => a.value - b.value);
 
   return (
     <Card>
@@ -65,14 +60,14 @@ const BreakdownChart = ({ pieData }: BreakdownChartProps) => {
                   />
                 </RadialBarChart>
               </ResponsiveContainer>
-              {/* Center total */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center">
-                <span className="text-2xl font-heading font-bold text-foreground">{total}</span>
-                <span className="text-[10px] text-muted-foreground font-body">Total</span>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <div className="flex flex-col items-center justify-center w-16 h-16 rounded-full bg-[#1C1C3A]">
+                  <span className="text-[10px] text-muted-foreground">Total</span>
+                  <span className="text-lg font-heading font-bold text-primary">{total}</span>
+                </div>
               </div>
             </div>
 
-            {/* Legend */}
             <div className="grid grid-cols-2 gap-x-6 gap-y-2">
               {radialData.map((d) => (
                 <div key={d.name} className="flex items-center gap-2 text-xs">
