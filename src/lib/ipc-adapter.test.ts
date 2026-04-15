@@ -2,7 +2,7 @@
  * IPC Adapter Tests — Verifies the adapter delegates to mock-ipc in web mode.
  */
 
-import { describe, expect, it, beforeEach } from "vitest";
+import { describe, expect, it, beforeEach, vi } from "vitest";
 import * as adapter from "@/lib/ipc-adapter";
 import { MOCK_ALARMS, MOCK_GROUPS, MOCK_SOUNDS, MOCK_EVENTS } from "@/test/fixtures";
 import { DEFAULT_SETTINGS } from "@/types/alarm";
@@ -126,5 +126,53 @@ describe("ipc-adapter (web mode)", () => {
     expect(copy).not.toBeNull();
     expect(copy!.Label).toContain("(copy)");
     expect(copy!.AlarmId).not.toBe(target.AlarmId);
+  });
+});
+
+describe("ipc-adapter error handling", () => {
+  beforeEach(() => {
+    localStorage.clear();
+    seed();
+    vi.restoreAllMocks();
+  });
+
+  it("listAlarms returns empty array when mock throws", async () => {
+    const mock = await import("@/lib/mock-ipc");
+    vi.spyOn(mock, "listAlarms").mockRejectedValue(new Error("DB crash"));
+
+    const result = await adapter.listAlarms();
+    expect(result).toEqual([]);
+  });
+
+  it("getAlarm returns null when mock throws", async () => {
+    const mock = await import("@/lib/mock-ipc");
+    vi.spyOn(mock, "getAlarm").mockRejectedValue(new Error("not found"));
+
+    const result = await adapter.getAlarm("nonexistent");
+    expect(result).toBeNull();
+  });
+
+  it("getSettings returns DEFAULT_SETTINGS when mock throws", async () => {
+    const mock = await import("@/lib/mock-ipc");
+    vi.spyOn(mock, "getSettings").mockRejectedValue(new Error("settings crash"));
+
+    const result = await adapter.getSettings();
+    expect(result).toEqual(DEFAULT_SETTINGS);
+  });
+
+  it("listGroups returns empty array when mock throws", async () => {
+    const mock = await import("@/lib/mock-ipc");
+    vi.spyOn(mock, "listGroups").mockRejectedValue(new Error("group crash"));
+
+    const result = await adapter.listGroups();
+    expect(result).toEqual([]);
+  });
+
+  it("listSounds returns empty array when mock throws", async () => {
+    const mock = await import("@/lib/mock-ipc");
+    vi.spyOn(mock, "listSounds").mockImplementation(() => { throw new Error("sounds crash"); });
+
+    const result = await adapter.listSounds();
+    expect(result).toEqual([]);
   });
 });
