@@ -33,6 +33,8 @@ export async function runTransaction<T>(
     return result;
   } catch (err) {
     try { tx.abort(); } catch { /* already aborted */ }
+    // Consume the tx.done rejection to prevent unhandled promise rejection
+    tx.done.catch(() => {});
     throw new AppError(
       ErrorCode.Database,
       `Transaction failed: ${err instanceof Error ? err.message : String(err)}`,
