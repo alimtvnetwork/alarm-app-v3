@@ -100,7 +100,7 @@ const Personalization = () => {
             </p>
           </CardHeader>
           <CardContent>
-            <div className="flex items-end gap-1 overflow-x-auto pb-2 scrollbar-hide">
+            <div className="flex items-end gap-0.5 overflow-x-auto pb-2 scrollbar-hide">
               {SKIN_OPTIONS.map(({ value, label, colors }) => {
                 const isActive = (settings.ThemeSkin ?? "default") === value;
                 return (
@@ -108,7 +108,7 @@ const Personalization = () => {
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => updateSettings({ ThemeSkin: value })}
-                        className={`flex flex-col items-center gap-1 rounded-2xl p-2 shrink-0 transition-all ${
+                        className={`flex flex-col items-center gap-0.5 rounded-xl p-1.5 shrink-0 transition-all ${
                           isActive
                             ? "bg-secondary/80 shadow-sm"
                             : "hover:bg-secondary/40"
@@ -118,12 +118,12 @@ const Personalization = () => {
                           {colors.map((c, i) => (
                             <div
                               key={i}
-                              className="h-7 w-3.5"
+                              className="h-5 w-2.5"
                               style={{ backgroundColor: c }}
                             />
                           ))}
                         </div>
-                        <span className="text-[9px] font-body text-muted-foreground">{label}</span>
+                        <span className="text-[8px] font-body text-muted-foreground">{label}</span>
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>{label} theme</TooltipContent>
