@@ -23,7 +23,7 @@ async function getTauri() {
 export async function listAlarms(): Promise<Alarm[]> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.listAlarms();
+    return await mock.listAlarms();
   }
   return (await getTauri()).listAlarms();
 }
@@ -31,9 +31,8 @@ export async function listAlarms(): Promise<Alarm[]> {
 export async function getAlarm(alarmId: string): Promise<Alarm | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.getAlarm(alarmId);
+    return await mock.getAlarm(alarmId);
   }
-  // Tauri doesn't have a single-get; filter from list
   const alarms = await listAlarms();
   return alarms.find((a) => a.AlarmId === alarmId) ?? null;
 }
@@ -41,7 +40,7 @@ export async function getAlarm(alarmId: string): Promise<Alarm | null> {
 export async function createAlarm(alarm: Partial<Alarm>): Promise<Alarm | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.createAlarm(alarm as Alarm);
+    return await mock.createAlarm(alarm as Alarm);
   }
   return (await getTauri()).createAlarm(alarm);
 }
@@ -49,7 +48,7 @@ export async function createAlarm(alarm: Partial<Alarm>): Promise<Alarm | null> 
 export async function updateAlarm(alarm: Alarm): Promise<Alarm | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.updateAlarm(alarm);
+    return await mock.updateAlarm(alarm);
   }
   return (await getTauri()).updateAlarm(alarm);
 }
@@ -57,7 +56,7 @@ export async function updateAlarm(alarm: Alarm): Promise<Alarm | null> {
 export async function deleteAlarm(alarmId: string): Promise<{ UndoToken: string } | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    mock.deleteAlarm(alarmId);
+    await mock.deleteAlarm(alarmId);
     return { UndoToken: alarmId };
   }
   return (await getTauri()).deleteAlarm(alarmId);
@@ -65,11 +64,10 @@ export async function deleteAlarm(alarmId: string): Promise<{ UndoToken: string 
 
 export async function undoDeleteAlarm(undoToken: string): Promise<Alarm | null> {
   if (!IS_TAURI) {
-    // Mock: restore by clearing DeletedAt
     const mock = await getMock();
-    const alarm = mock.getAlarm(undoToken);
+    const alarm = await mock.getAlarm(undoToken);
     if (alarm) {
-      return mock.updateAlarm({ ...alarm, DeletedAt: null });
+      return await mock.updateAlarm({ ...alarm, DeletedAt: null });
     }
     return null;
   }
@@ -79,10 +77,10 @@ export async function undoDeleteAlarm(undoToken: string): Promise<Alarm | null> 
 export async function toggleAlarm(alarmId: string, isEnabled?: boolean): Promise<Alarm | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    const alarm = mock.getAlarm(alarmId);
+    const alarm = await mock.getAlarm(alarmId);
     if (!alarm) return null;
     const newEnabled = isEnabled !== undefined ? isEnabled : !alarm.IsEnabled;
-    return mock.toggleAlarm(alarmId, newEnabled);
+    return await mock.toggleAlarm(alarmId, newEnabled);
   }
   return (await getTauri()).toggleAlarm(alarmId);
 }
@@ -90,7 +88,7 @@ export async function toggleAlarm(alarmId: string, isEnabled?: boolean): Promise
 export async function duplicateAlarm(alarmId: string): Promise<Alarm | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    const existing = mock.getAlarm(alarmId);
+    const existing = await mock.getAlarm(alarmId);
     if (!existing) return null;
     const now = new Date().toISOString();
     const duplicate: Alarm = {
@@ -100,7 +98,7 @@ export async function duplicateAlarm(alarmId: string): Promise<Alarm | null> {
       CreatedAt: now,
       UpdatedAt: now,
     };
-    return mock.createAlarm(duplicate);
+    return await mock.createAlarm(duplicate);
   }
   return (await getTauri()).duplicateAlarm(alarmId);
 }
@@ -108,7 +106,7 @@ export async function duplicateAlarm(alarmId: string): Promise<Alarm | null> {
 export async function reorderAlarms(alarmIds: string[]): Promise<void> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    mock.reorderAlarms(alarmIds);
+    await mock.reorderAlarms(alarmIds);
     return;
   }
   await (await getTauri()).reorderAlarms(alarmIds);
@@ -119,7 +117,7 @@ export async function reorderAlarms(alarmIds: string[]): Promise<void> {
 export async function listGroups(): Promise<AlarmGroup[]> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.listGroups();
+    return await mock.listGroups();
   }
   return (await getTauri()).listGroups();
 }
@@ -127,7 +125,7 @@ export async function listGroups(): Promise<AlarmGroup[]> {
 export async function createGroup(name: string, color: string): Promise<AlarmGroup | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    const groups = mock.listGroups();
+    const groups = await mock.listGroups();
     const group: AlarmGroup = {
       AlarmGroupId: crypto.randomUUID(),
       Name: name,
@@ -135,7 +133,7 @@ export async function createGroup(name: string, color: string): Promise<AlarmGro
       Position: groups.length,
       IsEnabled: true,
     };
-    return mock.createGroup(group);
+    return await mock.createGroup(group);
   }
   return (await getTauri()).createGroup(name, color);
 }
@@ -143,7 +141,7 @@ export async function createGroup(name: string, color: string): Promise<AlarmGro
 export async function updateGroup(group: AlarmGroup): Promise<AlarmGroup | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.updateGroup(group);
+    return await mock.updateGroup(group);
   }
   return (await getTauri()).updateGroup(group);
 }
@@ -151,7 +149,7 @@ export async function updateGroup(group: AlarmGroup): Promise<AlarmGroup | null>
 export async function deleteGroup(groupId: string): Promise<void> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    mock.deleteGroup(groupId);
+    await mock.deleteGroup(groupId);
     return;
   }
   await (await getTauri()).deleteGroup(groupId);
@@ -162,7 +160,7 @@ export async function deleteGroup(groupId: string): Promise<void> {
 export async function getSettings(): Promise<Settings> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.getSettings();
+    return await mock.getSettings();
   }
   return (await getTauri()).getSettings() ?? DEFAULT_SETTINGS;
 }
@@ -170,9 +168,8 @@ export async function getSettings(): Promise<Settings> {
 export async function updateSettings(partial: Partial<Settings>): Promise<Settings> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.updateSettings(partial);
+    return await mock.updateSettings(partial);
   }
-  // Tauri uses key-value updates
   const tauri = await getTauri();
   for (const [key, value] of Object.entries(partial)) {
     await tauri.updateSetting(key, String(value));
@@ -196,7 +193,7 @@ export async function listSounds(): Promise<AlarmSound[]> {
 export async function getSnoozeState(alarmId: string): Promise<SnoozeState | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.getSnoozeState(alarmId);
+    return await mock.getSnoozeState(alarmId);
   }
   const states = await (await getTauri()).getSnoozeState();
   return states.find((s) => s.AlarmId === alarmId) ?? null;
@@ -205,7 +202,7 @@ export async function getSnoozeState(alarmId: string): Promise<SnoozeState | nul
 export async function snoozeAlarm(alarmId: string, durationMin: number): Promise<SnoozeState | null> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.snoozeAlarm(alarmId, durationMin);
+    return await mock.snoozeAlarm(alarmId, durationMin);
   }
   return (await getTauri()).snoozeAlarm(alarmId, durationMin);
 }
@@ -213,7 +210,7 @@ export async function snoozeAlarm(alarmId: string, durationMin: number): Promise
 export async function clearSnooze(alarmId: string): Promise<void> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    mock.clearSnooze(alarmId);
+    await mock.clearSnooze(alarmId);
     return;
   }
   await (await getTauri()).cancelSnooze(alarmId);
@@ -222,7 +219,7 @@ export async function clearSnooze(alarmId: string): Promise<void> {
 export async function dismissAlarm(alarmId: string): Promise<void> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    mock.clearSnooze(alarmId);
+    await mock.clearSnooze(alarmId);
     return;
   }
   await (await getTauri()).dismissAlarm(alarmId);
@@ -233,7 +230,7 @@ export async function dismissAlarm(alarmId: string): Promise<void> {
 export async function listAlarmEvents(limit?: number, offset?: number): Promise<AlarmEvent[]> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    const events = mock.listAlarmEvents();
+    const events = await mock.listAlarmEvents();
     const start = offset ?? 0;
     const end = limit ? start + limit : undefined;
     return events.slice(start, end);
@@ -244,18 +241,26 @@ export async function listAlarmEvents(limit?: number, offset?: number): Promise<
 export async function createAlarmEvent(event: AlarmEvent): Promise<AlarmEvent> {
   if (!IS_TAURI) {
     const mock = await getMock();
-    return mock.createAlarmEvent(event);
+    return await mock.createAlarmEvent(event);
   }
-  // In Tauri, events are logged server-side during snooze/dismiss commands
   return event;
 }
 
 export async function clearHistory(): Promise<void> {
   if (!IS_TAURI) {
-    // Mock: not implemented
     return;
   }
   await (await getTauri()).clearHistory();
+}
+
+// ─── Reset ───────────────────────────────────────────────────────
+
+export async function resetAllData(): Promise<void> {
+  if (!IS_TAURI) {
+    const mock = await getMock();
+    await mock.resetAllData();
+    return;
+  }
 }
 
 // ─── Utilities ───────────────────────────────────────────────────
