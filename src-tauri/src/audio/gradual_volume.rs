@@ -1,9 +1,9 @@
 // Gradual volume — Phase 5 implementation
 // Quadratic t² volume curve for perceptually even fade-in
 
+use rodio::Sink;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
-use rodio::Sink;
 use tokio::sync::watch;
 
 const UPDATE_INTERVAL_MS: u64 = 100;
