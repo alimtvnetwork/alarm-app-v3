@@ -42,6 +42,7 @@ const SKIN_OPTIONS = [
   { value: "nord", label: "Nord", colors: ["#2e3440", "#5e81ac", "#d8dee9", "#88c0d0"] },
   { value: "solarized-dark", label: "Sol Dark", colors: ["#002b36", "#2aa198", "#fdf6e3", "#073642"] },
   { value: "solarized-light", label: "Sol Light", colors: ["#fdf6e3", "#2aa198", "#002b36", "#eee8d5"] },
+  { value: "catppuccin", label: "Catppuccin", colors: ["#1e1e2e", "#cba6f7", "#cdd6f4", "#f5c2e7"] },
 ];
 
 const Personalization = () => {
@@ -100,7 +101,7 @@ const Personalization = () => {
             </p>
           </CardHeader>
           <CardContent className="space-y-2">
-            {[SKIN_OPTIONS.slice(0, 4), SKIN_OPTIONS.slice(4, 8), SKIN_OPTIONS.slice(8)].map((row, ri) => (
+            {[SKIN_OPTIONS.slice(0, 4), SKIN_OPTIONS.slice(4, 8), SKIN_OPTIONS.slice(8, 12)].map((row, ri) => (
               <div key={ri} className="flex gap-1">
                 {row.map(({ value, label, colors }) => {
                   const isActive = (settings.ThemeSkin ?? "default") === value;
@@ -119,7 +120,7 @@ const Personalization = () => {
                             {colors.map((c, i) => (
                               <div
                                 key={i}
-                                className="h-5 w-2.5"
+                                className="h-4 w-2"
                                 style={{ backgroundColor: c }}
                               />
                             ))}
