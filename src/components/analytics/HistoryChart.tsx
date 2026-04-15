@@ -1,56 +1,80 @@
 /**
- * HistoryChart — Polar/rose chart showing daily alarm event totals
- * with labeled segments and center total.
+ * HistoryChart — Premium donut chart for daily alarm events
+ * based on the provided JSON design spec.
  */
 
 import {
-  PieChart, Pie, Cell, ResponsiveContainer, Text,
+  PieChart, Pie, Cell, ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
 
-const COLORS = [
-  "#3b82f6", // Fired — blue
-  "#facc15", // Snoozed — yellow
-  "#a78bfa", // Dismissed — purple
-  "#22d3ee", // Missed — cyan
-];
-
-const LABELS_MAP: Record<string, number> = { Fired: 0, Snoozed: 1, Dismissed: 2, Missed: 3 };
+const SEGMENT_COLORS: Record<string, string> = {
+  Fired: "#E6F14A",
+  Snoozed: "#4C6EF5",
+  Dismissed: "#B197FC",
+  Missed: "#3BC9DB",
+};
 
 interface HistoryChartProps {
   dailyData: { date: string; fired: number; snoozed: number; dismissed: number; missed: number }[];
 }
 
-/* Custom label renderer — value + name outside each slice */
+/* Outer label with connector line */
 const renderLabel = ({
   cx, cy, midAngle, outerRadius, name, value,
 }: any) => {
   const RADIAN = Math.PI / 180;
-  const radius = outerRadius + 18;
-  const x = cx + radius * Math.cos(-midAngle * RADIAN);
-  const y = cy + radius * Math.sin(-midAngle * RADIAN);
+  const sin = Math.sin(-midAngle * RADIAN);
+  const cos = Math.cos(-midAngle * RADIAN);
+
+  // Connector start (edge of pie)
+  const sx = cx + outerRadius * cos;
+  const sy = cy + outerRadius * sin;
+
+  // Connector elbow
+  const mx = cx + (outerRadius + 14) * cos;
+  const my = cy + (outerRadius + 14) * sin;
+
+  // Connector end (horizontal)
+  const ex = cx + (outerRadius + 28) * cos;
+  const ey = my;
+
+  const anchor = ex > cx ? "start" : "end";
+  const color = SEGMENT_COLORS[name] ?? "#fff";
+
   return (
     <g>
-      <Text
-        x={x}
-        y={y - 6}
-        textAnchor={x > cx ? "start" : "end"}
-        fill="hsl(var(--foreground))"
-        fontSize={12}
+      {/* Connector line */}
+      <path
+        d={`M${sx},${sy}L${mx},${my}L${ex},${ey}`}
+        stroke="#A5B4FC"
+        strokeWidth={1.5}
+        fill="none"
+      />
+      {/* Value */}
+      <text
+        x={ex + (ex > cx ? 4 : -4)}
+        y={ey - 6}
+        textAnchor={anchor}
+        fill={color}
+        fontSize={13}
         fontWeight={700}
+        fontFamily="sans-serif"
       >
         {value}
-      </Text>
-      <Text
-        x={x}
-        y={y + 8}
-        textAnchor={x > cx ? "start" : "end"}
+      </text>
+      {/* Label */}
+      <text
+        x={ex + (ex > cx ? 4 : -4)}
+        y={ey + 9}
+        textAnchor={anchor}
         fill="hsl(var(--muted-foreground))"
-        fontSize={9}
+        fontSize={10}
+        fontFamily="sans-serif"
       >
         {name}
-      </Text>
+      </text>
     </g>
   );
 };
@@ -87,16 +111,17 @@ const HistoryChart = ({ dailyData }: HistoryChartProps) => {
           <p className="py-8 text-center text-sm text-muted-foreground">{t("analytics.noData")}</p>
         ) : (
           <div className="flex flex-col items-center">
-            <div className="relative w-[260px] h-[260px]">
+            <div className="relative w-full h-[280px]">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
                     data={pieData}
                     cx="50%"
                     cy="50%"
-                    innerRadius={40}
-                    outerRadius={80}
-                    paddingAngle={2}
+                    innerRadius="45%"
+                    outerRadius="70%"
+                    paddingAngle={4}
+                    cornerRadius={6}
                     stroke="none"
                     dataKey="value"
                     startAngle={90}
@@ -104,17 +129,21 @@ const HistoryChart = ({ dailyData }: HistoryChartProps) => {
                     label={renderLabel}
                     labelLine={false}
                   >
-                    {pieData.map((entry, index) => {
-                      const ci = LABELS_MAP[entry.name] ?? index;
-                      return <Cell key={index} fill={COLORS[ci]} />;
-                    })}
+                    {pieData.map((entry, index) => (
+                      <Cell
+                        key={index}
+                        fill={SEGMENT_COLORS[entry.name] ?? "#888"}
+                      />
+                    ))}
                   </Pie>
                 </PieChart>
               </ResponsiveContainer>
-              {/* Center total */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-[10px] text-muted-foreground font-body">Total</span>
-                <span className="text-xl font-heading font-bold text-primary">{total}</span>
+              {/* Center circle with total */}
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <div className="flex flex-col items-center justify-center w-20 h-20 rounded-full bg-[#1C1C3A]">
+                  <span className="text-[10px] text-muted-foreground">Total</span>
+                  <span className="text-lg font-heading font-bold text-primary">{total}</span>
+                </div>
               </div>
             </div>
           </div>
