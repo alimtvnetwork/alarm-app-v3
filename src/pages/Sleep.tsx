@@ -77,25 +77,46 @@ const Sleep = () => {
           <CardTitle className="text-sm font-heading">{t("sleep.thisWeek")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <ResponsiveContainer width="100%" height={180}>
-            <BarChart data={MOCK_SLEEP_DATA}>
-              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={MOCK_SLEEP_DATA} barCategoryGap="20%">
+              <CartesianGrid
+                strokeDasharray="4 4"
+                vertical={false}
+                stroke="hsl(var(--border) / 0.4)"
+              />
+              <XAxis
+                dataKey="day"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                dy={8}
+              />
               <YAxis
                 domain={[0, 12]}
-                tick={{ fontSize: 11 }}
-                className="fill-muted-foreground"
-                label={{ value: "hrs", angle: -90, position: "insideLeft", fontSize: 10 }}
+                ticks={[0, 3, 6, 9, 12]}
+                axisLine={false}
+                tickLine={false}
+                tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
+                width={30}
+                unit="h"
               />
               <Tooltip
+                cursor={{ fill: "hsl(var(--accent) / 0.15)", radius: 6 }}
                 contentStyle={{
                   backgroundColor: "hsl(var(--card))",
                   border: "1px solid hsl(var(--border))",
-                  borderRadius: 8,
+                  borderRadius: 10,
                   fontSize: 12,
+                  padding: "6px 12px",
                 }}
+                formatter={(value: number) => [`${value}h`, "Sleep"]}
               />
-              <Bar dataKey="hours" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              <Bar
+                dataKey="hours"
+                fill="hsl(var(--primary))"
+                radius={[6, 6, 0, 0]}
+                maxBarSize={36}
+              />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
