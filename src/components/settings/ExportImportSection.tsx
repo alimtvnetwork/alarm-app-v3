@@ -50,8 +50,8 @@ const ExportImportSection = () => {
     doExport();
   };
 
-  const doExport = () => {
-    exportAlarms(exportFormat);
+  const doExport = async () => {
+    await exportAlarms(exportFormat);
     toast.success(t("export.exportBtn") + " ✓");
   };
 
