@@ -7,9 +7,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "@/stores/settings-store";
-import { useAlarmStore } from "@/stores/alarm-store";
 import { getTimeParts } from "@/lib/timezone-clock";
-import type { Alarm } from "@/types/alarm";
 
 interface AnimatedDigitProps {
   digit: string;
@@ -73,7 +71,7 @@ const DigitalTime = () => {
   const [now, setNow] = useState(new Date());
   const is24Hour = useSettingsStore((s) => s.settings.Is24Hour);
   const timeZone = useSettingsStore((s) => s.settings.SystemTimezone);
-  const alarms = useAlarmStore((s) => s.alarms);
+  
   const { t } = useTranslation();
 
   useEffect(() => {
@@ -89,8 +87,6 @@ const DigitalTime = () => {
   const displayMin = String(m).padStart(2, "0");
   const displaySec = String(s).padStart(2, "0");
   const period = is24Hour ? null : (h >= 12 ? "PM" : "AM");
-
-  const countdown = getCountdown(alarms, t);
 
   return (
     <div className="flex flex-col items-center gap-3 w-full">
@@ -124,43 +120,8 @@ const DigitalTime = () => {
           year: "numeric",
         })}
       </p>
-      {countdown && (
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-4 py-1.5">
-          <span className="text-sm">⏰</span>
-          <span className="text-xs font-body text-muted-foreground">{countdown}</span>
-        </div>
-      )}
     </div>
   );
 };
-
-function getCountdown(
-  alarms: Alarm[],
-  t: (key: string, opts?: Record<string, unknown>) => string,
-): string | null {
-  const now = Date.now();
-  let minDiffMs = Infinity;
-
-  for (const alarm of alarms) {
-    if (!alarm.IsEnabled || !alarm.NextFireTime) continue;
-    const diff = new Date(alarm.NextFireTime).getTime() - now;
-    if (diff > 0 && diff < minDiffMs) minDiffMs = diff;
-  }
-
-  if (minDiffMs === Infinity) return null;
-
-  const MINUTE_MS = 60_000;
-  const MINUTES_PER_HOUR = 60;
-  const totalMin = Math.floor(minDiffMs / MINUTE_MS);
-  const hours = Math.floor(totalMin / MINUTES_PER_HOUR);
-  const mins = totalMin % MINUTES_PER_HOUR;
-
-  const timeParts: string[] = [];
-  if (hours > 0) timeParts.push(t("clock.hours", { count: hours }));
-  if (mins > 0) timeParts.push(t("clock.minutes", { count: mins }));
-  if (timeParts.length === 0) timeParts.push(t("clock.minutes", { count: 0 }));
-
-  return t("clock.alarmIn", { time: timeParts.join(` ${t("clock.and")} `) });
-}
 
 export default DigitalTime;

@@ -9,7 +9,6 @@ import { Plus } from "lucide-react";
 import AlarmList from "@/components/alarm/AlarmList";
 import AlarmForm from "@/components/alarm/AlarmForm";
 import AlarmDebugPanel from "@/components/alarm/AlarmDebugPanel";
-import AlarmTestButtons from "@/components/alarm/AlarmTestButtons";
 import { useAlarmStore } from "@/stores/alarm-store";
 import type { Alarm } from "@/types/alarm";
 
@@ -66,9 +65,6 @@ const Alarms = () => {
         </div>
       </div>
 
-      <div className="mt-4">
-        <AlarmTestButtons />
-      </div>
 
       <AlarmForm
         alarm={editingAlarm}
