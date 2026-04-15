@@ -1,4 +1,5 @@
-import { Plus, Settings } from "lucide-react";
+import { Plus, Settings, AlertTriangle } from "lucide-react";
+import { useErrorStore } from "@/stores/error-store";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
@@ -9,6 +10,7 @@ const Header = () => {
   const { t } = useTranslation();
 
   const isAlarmsPage = location.pathname === "/alarms";
+  const errorCount = useErrorStore((s) => s.recentErrors.length);
 
   const handleAddAlarm = () => {
     if (location.pathname !== "/alarms") {
@@ -35,6 +37,20 @@ const Header = () => {
               <Plus className="h-5 w-5" />
             </Button>
           )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 relative hover:bg-transparent hover:text-foreground"
+            aria-label="Error log"
+            onClick={() => navigate("/errors")}
+          >
+            <AlertTriangle className="h-5 w-5" />
+            {errorCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-bold text-destructive-foreground">
+                {errorCount > 9 ? "9+" : errorCount}
+              </span>
+            )}
+          </Button>
           <Button
             variant="ghost"
             size="icon"

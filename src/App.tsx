@@ -23,6 +23,7 @@ const Settings = lazy(() => import("./pages/Settings"));
 const Analytics = lazy(() => import("./pages/Analytics"));
 const Sleep = lazy(() => import("./pages/Sleep"));
 const Personalization = lazy(() => import("./pages/Personalization"));
+const ErrorLog = lazy(() => import("./pages/ErrorLog"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 const queryClient = new QueryClient();
@@ -55,6 +56,7 @@ const AppInner = () => {
               <Route path="/analytics" element={<Analytics />} />
               <Route path="/sleep" element={<Sleep />} />
               <Route path="/personalization" element={<Personalization />} />
+              <Route path="/errors" element={<ErrorLog />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
