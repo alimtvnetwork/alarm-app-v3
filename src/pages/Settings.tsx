@@ -4,7 +4,7 @@
 
 import { useEffect } from "react";
 import ExportImportSection from "@/components/settings/ExportImportSection";
-import ErrorPanel from "@/components/settings/ErrorPanel";
+
 import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -287,9 +287,6 @@ const Settings = () => {
           </div>
         </CardContent>
       </Card>
-
-      {/* Error Log Panel */}
-      <ErrorPanel />
     </div>
   );
 };
