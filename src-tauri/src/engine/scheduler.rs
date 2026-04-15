@@ -1,7 +1,9 @@
 // Scheduler — Phase 3 implementation
 // compute_next_fire_time() + resolve_local_to_utc() for all 5 RepeatType variants
 
-use chrono::{DateTime, Duration, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc, Datelike};
+use chrono::{
+    DateTime, Datelike, Duration, LocalResult, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc,
+};
 use chrono_tz::Tz;
 use croner::Cron;
 
@@ -126,11 +128,7 @@ fn compute_cron(cron_expr: &str, ctx: &AlarmContext) -> Option<DateTime<Utc>> {
 // ── DST Resolution ──
 
 /// Convert a local date+time to UTC, handling DST edge cases.
-pub fn resolve_local_to_utc(
-    date: NaiveDate,
-    time: NaiveTime,
-    tz: &Tz,
-) -> Option<DateTime<Utc>> {
+pub fn resolve_local_to_utc(date: NaiveDate, time: NaiveTime, tz: &Tz) -> Option<DateTime<Utc>> {
     let naive_dt = NaiveDateTime::new(date, time);
     match tz.from_local_datetime(&naive_dt) {
         LocalResult::Single(dt) => Some(dt.with_timezone(&Utc)),
@@ -186,23 +184,19 @@ fn try_resolve_minute(date: NaiveDate, time: NaiveTime, tz: &Tz) -> Option<DateT
 
 /// Recompute all NextFireTime values when the system timezone changes.
 /// Called from alarm_engine on timezone change detection.
-pub fn recompute_all_fire_times(
-    conn: &rusqlite::Connection,
-    new_tz: &Tz,
-) {
+pub fn recompute_all_fire_times(conn: &rusqlite::Connection, new_tz: &Tz) {
     tracing::info!(timezone = %new_tz, "Timezone changed — recomputing all NextFireTime");
 
     let ctx = AlarmContext::new(new_tz, Utc::now());
 
-    let mut stmt = match conn.prepare(
-        "SELECT * FROM Alarms WHERE IsEnabled = 1 AND DeletedAt IS NULL"
-    ) {
-        Ok(s) => s,
-        Err(e) => {
-            tracing::error!(error = %e, "Failed to query alarms for tz recompute");
-            return;
-        }
-    };
+    let mut stmt =
+        match conn.prepare("SELECT * FROM Alarms WHERE IsEnabled = 1 AND DeletedAt IS NULL") {
+            Ok(s) => s,
+            Err(e) => {
+                tracing::error!(error = %e, "Failed to query alarms for tz recompute");
+                return;
+            }
+        };
 
     let alarms: Vec<_> = stmt
         .query_map([], |row| crate::storage::models::AlarmRow::from_row(row))
@@ -212,7 +206,10 @@ pub fn recompute_all_fire_times(
 
     for alarm in &alarms {
         let time = NaiveTime::parse_from_str(&alarm.time, "%H:%M").ok();
-        let date = alarm.date.as_ref().and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
+        let date = alarm
+            .date
+            .as_ref()
+            .and_then(|d| NaiveDate::parse_from_str(d, "%Y-%m-%d").ok());
         let repeat = alarm.repeat_pattern();
 
         if let Some(alarm_time) = time {
@@ -226,5 +223,8 @@ pub fn recompute_all_fire_times(
         }
     }
 
-    tracing::info!(count = alarms.len(), "Recalculated all alarm times for new timezone");
+    tracing::info!(
+        count = alarms.len(),
+        "Recalculated all alarm times for new timezone"
+    );
 }

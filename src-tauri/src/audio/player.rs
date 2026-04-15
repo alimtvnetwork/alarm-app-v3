@@ -52,8 +52,9 @@ impl AlarmPlayer {
         self.stop();
 
         let path = resolve_sound_path(sound_file, sounds_dir);
-        let file = std::fs::File::open(&path)
-            .map_err(|_| AlarmAppError::FileNotFound { path: path.to_string_lossy().to_string() })?;
+        let file = std::fs::File::open(&path).map_err(|_| AlarmAppError::FileNotFound {
+            path: path.to_string_lossy().to_string(),
+        })?;
 
         let source = Decoder::new(BufReader::new(file))
             .map_err(|e| AlarmAppError::Audio(format!("Failed to decode audio: {e}")))?;
@@ -96,11 +97,7 @@ impl AlarmPlayer {
     }
 
     /// Preview a sound briefly (3 seconds).
-    pub fn preview(
-        &mut self,
-        sound_file: &str,
-        sounds_dir: &Path,
-    ) -> Result<(), AlarmAppError> {
+    pub fn preview(&mut self, sound_file: &str, sounds_dir: &Path) -> Result<(), AlarmAppError> {
         self.play(sound_file, false, 0, sounds_dir)
     }
 
@@ -178,7 +175,9 @@ fn reject_symlink(path: &str) -> Result<(), AlarmAppError> {
 fn resolve_canonical(path: &str) -> Result<PathBuf, AlarmAppError> {
     Path::new(path)
         .canonicalize()
-        .map_err(|_| AlarmAppError::FileNotFound { path: path.to_string() })
+        .map_err(|_| AlarmAppError::FileNotFound {
+            path: path.to_string(),
+        })
 }
 
 fn reject_restricted_path(canonical: &Path) -> Result<(), AlarmAppError> {
@@ -192,15 +191,17 @@ fn reject_restricted_path(canonical: &Path) -> Result<(), AlarmAppError> {
         return Err(AlarmAppError::RestrictedPath);
     }
     #[cfg(target_os = "linux")]
-    if path_str.starts_with("/etc") || path_str.starts_with("/sys") || path_str.starts_with("/proc") {
+    if path_str.starts_with("/etc") || path_str.starts_with("/sys") || path_str.starts_with("/proc")
+    {
         return Err(AlarmAppError::RestrictedPath);
     }
     Ok(())
 }
 
 fn validate_file_size(canonical: &Path) -> Result<(), AlarmAppError> {
-    let metadata = std::fs::metadata(canonical)
-        .map_err(|_| AlarmAppError::FileNotFound { path: canonical.to_string_lossy().to_string() })?;
+    let metadata = std::fs::metadata(canonical).map_err(|_| AlarmAppError::FileNotFound {
+        path: canonical.to_string_lossy().to_string(),
+    })?;
     if metadata.len() > MAX_SOUND_FILE_SIZE {
         return Err(AlarmAppError::SoundFileTooLarge {
             size_bytes: metadata.len(),

@@ -1,8 +1,8 @@
 use rusqlite::params;
 use serde::Deserialize;
+use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
-use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::errors::AlarmAppError;
@@ -38,7 +38,7 @@ pub struct CreateAlarmPayload {
 pub async fn list_alarms(pool: State<'_, DbPool>) -> Result<Vec<AlarmRow>, AlarmAppError> {
     let conn = pool.lock().await;
     let mut stmt = conn.prepare(
-        "SELECT * FROM Alarms WHERE DeletedAt IS NULL ORDER BY Position ASC, CreatedAt DESC"
+        "SELECT * FROM Alarms WHERE DeletedAt IS NULL ORDER BY Position ASC, CreatedAt DESC",
     )?;
     let alarms = stmt
         .query_map([], AlarmRow::from_row)?
@@ -54,7 +54,9 @@ pub async fn create_alarm(
 ) -> Result<AlarmRow, AlarmAppError> {
     // Validate time format
     if !is_valid_time(&payload.time) {
-        return Err(AlarmAppError::Validation("Time must be in HH:MM format (00:00-23:59)".into()));
+        return Err(AlarmAppError::Validation(
+            "Time must be in HH:MM format (00:00-23:59)".into(),
+        ));
     }
 
     let conn = pool.lock().await;
@@ -63,7 +65,9 @@ pub async fn create_alarm(
 
     let label = payload.label.unwrap_or_default();
     if label.len() > 100 {
-        return Err(AlarmAppError::Validation("Label must be 100 characters or fewer".into()));
+        return Err(AlarmAppError::Validation(
+            "Label must be 100 characters or fewer".into(),
+        ));
     }
 
     conn.execute(
@@ -115,7 +119,9 @@ pub async fn update_alarm(
     let now = chrono::Utc::now().to_rfc3339();
 
     if alarm.label.len() > 100 {
-        return Err(AlarmAppError::Validation("Label must be 100 characters or fewer".into()));
+        return Err(AlarmAppError::Validation(
+            "Label must be 100 characters or fewer".into(),
+        ));
     }
 
     let rows = conn.execute(
@@ -202,7 +208,9 @@ pub async fn undo_delete_alarm(
     )?;
 
     if rows == 0 {
-        return Err(AlarmAppError::Validation("Undo token expired or invalid".into()));
+        return Err(AlarmAppError::Validation(
+            "Undo token expired or invalid".into(),
+        ));
     }
 
     let alarm = conn.query_row(
@@ -222,11 +230,13 @@ pub async fn toggle_alarm(
 ) -> Result<AlarmRow, AlarmAppError> {
     let conn = pool.lock().await;
 
-    let current: i32 = conn.query_row(
-        "SELECT IsEnabled FROM Alarms WHERE AlarmId = ?1 AND DeletedAt IS NULL",
-        params![alarm_id],
-        |row| row.get(0),
-    ).map_err(|_| AlarmAppError::Validation("Alarm not found".into()))?;
+    let current: i32 = conn
+        .query_row(
+            "SELECT IsEnabled FROM Alarms WHERE AlarmId = ?1 AND DeletedAt IS NULL",
+            params![alarm_id],
+            |row| row.get(0),
+        )
+        .map_err(|_| AlarmAppError::Validation("Alarm not found".into()))?;
 
     let new_state = if current != 0 { 0 } else { 1 };
 
@@ -251,11 +261,13 @@ pub async fn duplicate_alarm(
 ) -> Result<AlarmRow, AlarmAppError> {
     let conn = pool.lock().await;
 
-    let source = conn.query_row(
-        "SELECT * FROM Alarms WHERE AlarmId = ?1 AND DeletedAt IS NULL",
-        params![alarm_id],
-        AlarmRow::from_row,
-    ).map_err(|_| AlarmAppError::Validation("Source alarm not found".into()))?;
+    let source = conn
+        .query_row(
+            "SELECT * FROM Alarms WHERE AlarmId = ?1 AND DeletedAt IS NULL",
+            params![alarm_id],
+            AlarmRow::from_row,
+        )
+        .map_err(|_| AlarmAppError::Validation("Source alarm not found".into()))?;
 
     let new_id = Uuid::new_v4().to_string();
     let now = chrono::Utc::now().to_rfc3339();

@@ -1,7 +1,7 @@
 use rusqlite::params;
+use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
-use std::sync::Arc;
 
 use crate::errors::AlarmAppError;
 use crate::storage::models::AlarmEventRow;
@@ -18,9 +18,8 @@ pub async fn list_alarm_events(
     let limit = limit.unwrap_or(100);
     let offset = offset.unwrap_or(0);
 
-    let mut stmt = conn.prepare(
-        "SELECT * FROM AlarmEvents ORDER BY Timestamp DESC LIMIT ?1 OFFSET ?2"
-    )?;
+    let mut stmt =
+        conn.prepare("SELECT * FROM AlarmEvents ORDER BY Timestamp DESC LIMIT ?1 OFFSET ?2")?;
     let events = stmt
         .query_map(params![limit, offset], AlarmEventRow::from_row)?
         .filter_map(|r| r.ok())
@@ -29,9 +28,7 @@ pub async fn list_alarm_events(
 }
 
 #[tauri::command]
-pub async fn clear_history(
-    pool: State<'_, DbPool>,
-) -> Result<(), AlarmAppError> {
+pub async fn clear_history(pool: State<'_, DbPool>) -> Result<(), AlarmAppError> {
     let conn = pool.lock().await;
     conn.execute("DELETE FROM AlarmEvents", [])?;
     tracing::info!("Alarm event history cleared");

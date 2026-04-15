@@ -1,7 +1,7 @@
 use rusqlite::params;
+use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
-use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::errors::AlarmAppError;
@@ -27,14 +27,20 @@ pub async fn create_group(
     color: String,
 ) -> Result<AlarmGroupRow, AlarmAppError> {
     if name.is_empty() || name.len() > 50 {
-        return Err(AlarmAppError::Validation("Group name must be 1-50 characters".into()));
+        return Err(AlarmAppError::Validation(
+            "Group name must be 1-50 characters".into(),
+        ));
     }
 
     let conn = pool.lock().await;
     let group_id = Uuid::new_v4().to_string();
 
     let position: i32 = conn
-        .query_row("SELECT COALESCE(MAX(Position), -1) + 1 FROM AlarmGroups", [], |row| row.get(0))
+        .query_row(
+            "SELECT COALESCE(MAX(Position), -1) + 1 FROM AlarmGroups",
+            [],
+            |row| row.get(0),
+        )
         .unwrap_or(0);
 
     conn.execute(
@@ -58,13 +64,20 @@ pub async fn update_group(
     group: AlarmGroupRow,
 ) -> Result<AlarmGroupRow, AlarmAppError> {
     if group.name.is_empty() || group.name.len() > 50 {
-        return Err(AlarmAppError::Validation("Group name must be 1-50 characters".into()));
+        return Err(AlarmAppError::Validation(
+            "Group name must be 1-50 characters".into(),
+        ));
     }
 
     let conn = pool.lock().await;
     let rows = conn.execute(
         "UPDATE AlarmGroups SET Name=?1, Color=?2, Position=?3 WHERE AlarmGroupId=?4",
-        params![group.name, group.color, group.position, group.alarm_group_id],
+        params![
+            group.name,
+            group.color,
+            group.position,
+            group.alarm_group_id
+        ],
     )?;
 
     if rows == 0 {
@@ -81,10 +94,7 @@ pub async fn update_group(
 }
 
 #[tauri::command]
-pub async fn delete_group(
-    pool: State<'_, DbPool>,
-    group_id: String,
-) -> Result<(), AlarmAppError> {
+pub async fn delete_group(pool: State<'_, DbPool>, group_id: String) -> Result<(), AlarmAppError> {
     let conn = pool.lock().await;
 
     // Unlink alarms from this group (ON DELETE SET NULL handles this, but be explicit)
@@ -113,11 +123,13 @@ pub async fn toggle_group(
 ) -> Result<AlarmGroupRow, AlarmAppError> {
     let conn = pool.lock().await;
 
-    let current: i32 = conn.query_row(
-        "SELECT IsEnabled FROM AlarmGroups WHERE AlarmGroupId = ?1",
-        params![group_id],
-        |row| row.get(0),
-    ).map_err(|_| AlarmAppError::Validation("Group not found".into()))?;
+    let current: i32 = conn
+        .query_row(
+            "SELECT IsEnabled FROM AlarmGroups WHERE AlarmGroupId = ?1",
+            params![group_id],
+            |row| row.get(0),
+        )
+        .map_err(|_| AlarmAppError::Validation("Group not found".into()))?;
 
     let new_state = if current != 0 { 0 } else { 1 };
 
