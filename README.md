@@ -1,8 +1,8 @@
 # Alarm App
 
-A warm, minimal alarm clock web app with smart scheduling, sleep tools, and wellness tracking.
+A warm, minimal cross-platform desktop alarm clock with smart scheduling, sleep tools, and wellness tracking.
 
-Built with **React 18 · TypeScript · Vite 5 · Tailwind CSS · Zustand · shadcn/ui**.
+Built with **Tauri 2.x · Rust · React 18 · TypeScript · Vite 5 · Tailwind CSS · Zustand · shadcn/ui · SQLite**.
 
 ---
 
@@ -203,21 +203,22 @@ curl -fsSL https://github.com/alimtvnetwork/alarm-app/releases/latest/download/i
 
 ## What It Does
 
-A feature-rich alarm clock PWA with smart scheduling, multiple dismissal modes, and sleep wellness tools. Every alarm supports **all features** automatically:
+A feature-rich cross-platform desktop alarm clock with smart scheduling, multiple dismissal modes, and sleep wellness tools. Every alarm supports **all features** automatically:
 
 - **Clock Display** — analog + digital clock with flip-clock animations
 - **Alarm Management** — create, edit, delete, toggle, duplicate, drag-to-reorder
 - **Repeat Patterns** — Once, Daily, Weekly scheduling
-- **Alarm Tones** — 4 oscillator-based tones with gradual volume ramp
-- **Dismissal Challenges** — Math & Typing challenges to prevent oversleeping
+- **Alarm Tones** — 4 tones with gradual volume ramp (native `rodio` audio)
+- **Dismissal Challenges** — Math, Typing & Shake challenges to prevent oversleeping
 - **Snooze** — configurable duration and max snooze count
-- **Notifications** — OS-level browser notifications (background tab support)
+- **Notifications** — OS-native notifications via `tauri-plugin-notification`
 - **Sleep Tracking** — bedtime reminders, ambient sounds, sleep analytics
 - **Analytics Dashboard** — streak tracking, sleep quality insights
-- **Theming** — light/dark/system, 11 skin themes, accent color picker
-- **Internationalization** — EN, MS, ZH, JA language support
-- **PWA** — installable as progressive web app (Add to Dock on macOS)
-- **Timezone-aware** — defaults to Asia/Kuala_Lumpur
+- **Theming** — light/dark/system, 12 skin themes, 6 accent colors
+- **Internationalization** — EN, MS, ZH, JA, BN language support
+- **System Tray** — minimize to tray, background operation
+- **Auto-Updater** — built-in updates with Ed25519 signature verification
+- **SQLite Database** — persistent storage with WAL mode
 
 ---
 
@@ -247,14 +248,14 @@ A feature-rich alarm clock PWA with smart scheduling, multiple dismissal modes, 
 
 ### Alarm Tones
 
-4 built-in oscillator-based tones generated via Web Audio API — no audio files required.
+4 built-in alarm tones played via native `rodio` audio engine — no browser required.
 
 | Tone | Description |
 |------|-------------|
-| Classic | Traditional alarm beep pattern |
-| Gentle | Soft ascending tones |
-| Urgent | Rapid pulsing alert |
-| Musical | Melodic sequence |
+| Classic Beep | Traditional alarm beep pattern |
+| Gentle Chime | Soft ascending tones |
+| Nature Birds | Natural birdsong sounds |
+| Digital Pulse | Modern pulsing alert |
 
 All tones support **gradual volume ramp** for a gentler wake-up experience.
 
@@ -358,32 +359,43 @@ npx serve dist           # Using the 'serve' package
 ## Project Structure
 
 ```
-src/
-├── components/           # React components
-│   ├── alarm/            # AlarmCard, AlarmForm, AlarmOverlay, AlarmChecker
-│   ├── clock/            # AnalogClock, DigitalTime
-│   ├── sleep/            # BedtimeReminder, AmbientPlayer
-│   ├── analytics/        # StatCard, chart tabs, data hooks
-│   └── ui/               # shadcn/ui primitives
-├── lib/                  # Utilities
-│   ├── alarm-audio.ts            # Web Audio oscillator tones
-│   ├── alarm-notification.ts     # Browser Notification API
-│   ├── alarm-timezone.ts         # Timezone normalization
-│   ├── next-fire-time.ts         # NextFireTime computation
-│   ├── mock-ipc.ts               # localStorage persistence layer
-│   └── ...
-├── pages/                # Route pages (Index, Alarms, Sleep, Analytics, Settings)
-├── stores/               # Zustand stores (alarm, overlay, settings)
-├── types/                # TypeScript interfaces & enums
-├── test/                 # Test fixtures
-└── i18n/                 # Translation files
+src/                              # Frontend (React)
+├── components/                   # React components
+│   ├── alarm/                    # AlarmCard, AlarmForm, AlarmOverlay
+│   ├── clock/                    # AnalogClock, DigitalTime
+│   ├── sleep/                    # BedtimeReminder, AmbientPlayer
+│   ├── personalization/          # ThemeSelector, SkinSelector, AccentColorPicker
+│   ├── settings/                 # AlarmDefaultsSection, DisplaySection, etc.
+│   ├── errors/                   # ErrorRow, ErrorDetailModal
+│   └── ui/                       # shadcn/ui primitives
+├── lib/                          # Utilities
+│   ├── ipc-adapter.ts            # Dual-path IPC (mock ↔ Tauri)
+│   ├── tauri-commands.ts         # Native Tauri invoke wrappers
+│   ├── mock-ipc.ts               # Web preview mock backend
+│   └── next-fire-time.ts         # NextFireTime computation
+├── stores/                       # Zustand stores (alarm, overlay, settings, error)
+├── pages/                        # Route pages
+├── types/                        # TypeScript interfaces & enums
+└── i18n/                         # Translation files
+
+src-tauri/                        # Backend (Rust)
+├── src/
+│   ├── main.rs                   # 10-step startup sequence
+│   ├── commands/                 # 30+ IPC command handlers
+│   ├── engine/                   # Alarm scheduler, wake listener, timezone watcher
+│   ├── storage/                  # SQLite DB layer, models
+│   ├── tray/                     # System tray setup
+│   └── errors.rs                 # Error types
+├── migrations/                   # SQLite migrations (V1–V3)
+├── Cargo.toml                    # Rust dependencies
+└── tauri.conf.json               # App configuration
 ```
 
 ---
 
 ## Data Persistence
 
-Currently uses **localStorage** — data persists in-browser but is not synced across devices. Clearing browser data will reset all alarms and settings.
+Uses **SQLite** with WAL mode via `rusqlite`. Database stored in the OS app data directory. In web preview mode, uses in-memory mock data via `mock-ipc.ts`.
 
 ---
 
@@ -391,14 +403,17 @@ Currently uses **localStorage** — data persists in-browser but is not synced a
 
 | Technology | Purpose |
 |------------|---------|
-| React 18 | UI framework |
-| TypeScript 5 | Type safety |
-| Vite 5 | Build tool & dev server |
-| Tailwind CSS v3 | Utility-first styling |
-| Zustand | State management |
-| shadcn/ui | Component library |
-| Web Audio API | Alarm tone generation |
-| Notification API | OS-level alerts |
+| **Tauri 2.x** | Native app framework (Rust backend + WebView) |
+| **Rust** | Backend: alarm engine, audio, notifications, storage |
+| **SQLite** | Persistent database (rusqlite + refinery migrations) |
+| **React 18** | UI framework |
+| **TypeScript 5** | Type safety |
+| **Vite 5** | Build tool & dev server |
+| **Tailwind CSS v3** | Utility-first styling |
+| **Zustand** | State management |
+| **shadcn/ui** | Component library |
+| **rodio** | Native audio playback |
+| **tokio** | Async runtime for background tasks |
 
 ---
 
