@@ -1,6 +1,5 @@
 /// System Tray — Menu with alarm count, show window, and quit actions.
 /// Updates badge/title when alarm count changes.
-
 use tauri::{
     menu::{Menu, MenuItem},
     tray::{TrayIcon, TrayIconBuilder},
