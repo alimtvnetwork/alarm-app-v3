@@ -111,7 +111,7 @@ export const useErrorStore = create<ErrorStore>((set, get) => ({
     const isError = error instanceof Error;
     const message = isError ? error.message : String(error);
     const stack = isError ? error.stack : undefined;
-    const code = error instanceof AppError ? error.code : "UnhandledException";
+    const code = isError && error instanceof AppError ? error.code : "UnhandledException";
     const severity = getSeverityForCode(code);
     const captured = buildCapturedError(code, message, severity, context, stack);
     set((s) => ({
