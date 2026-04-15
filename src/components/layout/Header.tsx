@@ -10,6 +10,15 @@ const Header = () => {
 
   const isAlarmsPage = location.pathname === "/" || location.pathname === "/alarms";
 
+  const handleAddAlarm = () => {
+    if (location.pathname !== "/alarms") {
+      navigate("/alarms");
+      setTimeout(() => window.dispatchEvent(new Event("alarm:new")), 100);
+    } else {
+      window.dispatchEvent(new Event("alarm:new"));
+    }
+  };
+
   return (
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-3">
@@ -21,7 +30,7 @@ const Header = () => {
               size="icon"
               className="h-9 w-9"
               aria-label={t("header.addAlarm")}
-              onClick={() => window.dispatchEvent(new Event("alarm:new"))}
+              onClick={handleAddAlarm}
             >
               <Plus className="h-5 w-5" />
             </Button>
