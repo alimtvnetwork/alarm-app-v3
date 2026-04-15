@@ -3,8 +3,8 @@
 
 use serde::{Deserialize, Serialize};
 
-use tokio::sync::Mutex;
 use std::sync::Arc;
+use tokio::sync::Mutex;
 
 use crate::audio::player::{self, AlarmPlayer};
 use crate::errors::AlarmAppError;
@@ -15,16 +15,66 @@ type AudioState = Arc<Mutex<Option<AlarmPlayer>>>;
 /// Built-in sound library — 10 sounds across 4 categories.
 fn builtin_sounds() -> Vec<AlarmSound> {
     vec![
-        AlarmSound { alarm_sound_id: "classic-beep".into(), name: "Classic Beep".into(), file_name: "classic-beep.wav".into(), category: SoundCategory::Classic },
-        AlarmSound { alarm_sound_id: "digital-buzz".into(), name: "Digital Buzz".into(), file_name: "digital-buzz.wav".into(), category: SoundCategory::Digital },
-        AlarmSound { alarm_sound_id: "gentle-chime".into(), name: "Gentle Chime".into(), file_name: "gentle-chime.wav".into(), category: SoundCategory::Gentle },
-        AlarmSound { alarm_sound_id: "rooster".into(), name: "Rooster".into(), file_name: "rooster.wav".into(), category: SoundCategory::Classic },
-        AlarmSound { alarm_sound_id: "bell".into(), name: "Bell".into(), file_name: "bell.wav".into(), category: SoundCategory::Classic },
-        AlarmSound { alarm_sound_id: "rain-gentle".into(), name: "Gentle Rain".into(), file_name: "rain-gentle.wav".into(), category: SoundCategory::Nature },
-        AlarmSound { alarm_sound_id: "birds-morning".into(), name: "Morning Birds".into(), file_name: "birds-morning.wav".into(), category: SoundCategory::Nature },
-        AlarmSound { alarm_sound_id: "ocean-wave".into(), name: "Ocean Wave".into(), file_name: "ocean-wave.wav".into(), category: SoundCategory::Nature },
-        AlarmSound { alarm_sound_id: "urgent-siren".into(), name: "Urgent Siren".into(), file_name: "urgent-siren.wav".into(), category: SoundCategory::Digital },
-        AlarmSound { alarm_sound_id: "soft-piano".into(), name: "Soft Piano".into(), file_name: "soft-piano.wav".into(), category: SoundCategory::Gentle },
+        AlarmSound {
+            alarm_sound_id: "classic-beep".into(),
+            name: "Classic Beep".into(),
+            file_name: "classic-beep.wav".into(),
+            category: SoundCategory::Classic,
+        },
+        AlarmSound {
+            alarm_sound_id: "digital-buzz".into(),
+            name: "Digital Buzz".into(),
+            file_name: "digital-buzz.wav".into(),
+            category: SoundCategory::Digital,
+        },
+        AlarmSound {
+            alarm_sound_id: "gentle-chime".into(),
+            name: "Gentle Chime".into(),
+            file_name: "gentle-chime.wav".into(),
+            category: SoundCategory::Gentle,
+        },
+        AlarmSound {
+            alarm_sound_id: "rooster".into(),
+            name: "Rooster".into(),
+            file_name: "rooster.wav".into(),
+            category: SoundCategory::Classic,
+        },
+        AlarmSound {
+            alarm_sound_id: "bell".into(),
+            name: "Bell".into(),
+            file_name: "bell.wav".into(),
+            category: SoundCategory::Classic,
+        },
+        AlarmSound {
+            alarm_sound_id: "rain-gentle".into(),
+            name: "Gentle Rain".into(),
+            file_name: "rain-gentle.wav".into(),
+            category: SoundCategory::Nature,
+        },
+        AlarmSound {
+            alarm_sound_id: "birds-morning".into(),
+            name: "Morning Birds".into(),
+            file_name: "birds-morning.wav".into(),
+            category: SoundCategory::Nature,
+        },
+        AlarmSound {
+            alarm_sound_id: "ocean-wave".into(),
+            name: "Ocean Wave".into(),
+            file_name: "ocean-wave.wav".into(),
+            category: SoundCategory::Nature,
+        },
+        AlarmSound {
+            alarm_sound_id: "urgent-siren".into(),
+            name: "Urgent Siren".into(),
+            file_name: "urgent-siren.wav".into(),
+            category: SoundCategory::Digital,
+        },
+        AlarmSound {
+            alarm_sound_id: "soft-piano".into(),
+            name: "Soft Piano".into(),
+            file_name: "soft-piano.wav".into(),
+            category: SoundCategory::Gentle,
+        },
     ]
 }
 
@@ -42,9 +92,7 @@ pub struct SetCustomSoundPayload {
 
 /// Validate and register a custom sound file.
 #[tauri::command]
-pub async fn set_custom_sound(
-    payload: SetCustomSoundPayload,
-) -> Result<AlarmSound, AlarmAppError> {
+pub async fn set_custom_sound(payload: SetCustomSoundPayload) -> Result<AlarmSound, AlarmAppError> {
     player::validate_custom_sound(&payload.file_path)?;
 
     let file_name = std::path::Path::new(&payload.file_path)
@@ -83,7 +131,13 @@ pub async fn validate_custom_sound(
     payload: ValidateCustomSoundPayload,
 ) -> Result<SoundValidationResult, AlarmAppError> {
     match player::validate_custom_sound(&payload.file_path) {
-        Ok(()) => Ok(SoundValidationResult { is_valid: true, error: None }),
-        Err(e) => Ok(SoundValidationResult { is_valid: false, error: Some(e.to_string()) }),
+        Ok(()) => Ok(SoundValidationResult {
+            is_valid: true,
+            error: None,
+        }),
+        Err(e) => Ok(SoundValidationResult {
+            is_valid: false,
+            error: Some(e.to_string()),
+        }),
     }
 }

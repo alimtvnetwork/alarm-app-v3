@@ -1,11 +1,11 @@
 pub mod alarm;
-pub mod settings;
+pub mod audio;
+pub mod challenge;
+pub mod export_import;
 pub mod group;
 pub mod history;
-pub mod audio;
-pub mod export_import;
-pub mod challenge;
-pub mod wellness;
 pub mod personalization;
+pub mod settings;
 pub mod snooze;
 pub mod webhook;
+pub mod wellness;

@@ -1,8 +1,8 @@
 // Challenge commands — Phase 8 implementation
 // Generate and verify dismissal challenges (Math, Typing, Memory)
 
-use serde::{Deserialize, Serialize};
 use rand::Rng;
+use serde::{Deserialize, Serialize};
 
 use crate::errors::AlarmAppError;
 use crate::storage::models::{ChallengeDifficulty, ChallengeType};

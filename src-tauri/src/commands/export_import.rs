@@ -3,13 +3,13 @@
 
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
-use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::errors::AlarmAppError;
-use crate::storage::models::{AlarmRow, AlarmGroupRow};
+use crate::storage::models::{AlarmGroupRow, AlarmRow};
 
 type DbPool = Arc<Mutex<rusqlite::Connection>>;
 
@@ -26,22 +26,17 @@ pub struct ExportData {
 
 /// Export all alarms and groups as a JSON structure.
 #[tauri::command]
-pub async fn export_alarms(
-    pool: State<'_, DbPool>,
-) -> Result<ExportData, AlarmAppError> {
+pub async fn export_alarms(pool: State<'_, DbPool>) -> Result<ExportData, AlarmAppError> {
     let conn = pool.lock().await;
 
-    let mut alarm_stmt = conn.prepare(
-        "SELECT * FROM Alarms WHERE DeletedAt IS NULL ORDER BY CreatedAt DESC"
-    )?;
+    let mut alarm_stmt =
+        conn.prepare("SELECT * FROM Alarms WHERE DeletedAt IS NULL ORDER BY CreatedAt DESC")?;
     let alarms: Vec<AlarmRow> = alarm_stmt
         .query_map([], AlarmRow::from_row)?
         .filter_map(|r| r.ok())
         .collect();
 
-    let mut group_stmt = conn.prepare(
-        "SELECT * FROM AlarmGroups ORDER BY Position ASC"
-    )?;
+    let mut group_stmt = conn.prepare("SELECT * FROM AlarmGroups ORDER BY Position ASC")?;
     let groups: Vec<AlarmGroupRow> = group_stmt
         .query_map([], AlarmGroupRow::from_row)?
         .filter_map(|r| r.ok())
