@@ -33,10 +33,7 @@ pub struct DueAlarm {
 
 /// Start the alarm engine background loop.
 /// Spawns a tokio task that polls every 30 seconds.
-pub fn start_engine(
-    pool: Arc<Mutex<Connection>>,
-    app_handle: tauri::AppHandle,
-) {
+pub fn start_engine(pool: Arc<Mutex<Connection>>, app_handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {
         tracing::info!("Alarm engine started ({}s interval)", POLL_INTERVAL_SECS);
 
@@ -72,7 +69,13 @@ async fn check_missed_alarms_on_start(
         }
         let labels: Vec<String> = due_alarms
             .iter()
-            .map(|a| if a.label.is_empty() { a.time.clone() } else { a.label.clone() })
+            .map(|a| {
+                if a.label.is_empty() {
+                    a.time.clone()
+                } else {
+                    a.label.clone()
+                }
+            })
             .collect();
         crate::notifications::send_missed_alarms(app_handle, &labels);
         emit_missed_alarms(app_handle, &labels);
@@ -83,18 +86,16 @@ async fn check_missed_alarms_on_start(
 }
 
 /// On cold start, re-schedule active snoozes or fire expired ones.
-fn recover_snoozes(
-    conn: &Connection,
-    now: &DateTime<Utc>,
-    app_handle: &tauri::AppHandle,
-) {
+fn recover_snoozes(conn: &Connection, now: &DateTime<Utc>, app_handle: &tauri::AppHandle) {
     let mut stmt = match conn.prepare("SELECT * FROM SnoozeState") {
         Ok(s) => s,
         Err(_) => return,
     };
 
     let snoozes: Vec<_> = stmt
-        .query_map([], |row| crate::storage::models::SnoozeStateRow::from_row(row))
+        .query_map([], |row| {
+            crate::storage::models::SnoozeStateRow::from_row(row)
+        })
         .unwrap_or_else(|_| panic!("query_map failed"))
         .filter_map(|r| r.ok())
         .collect();
@@ -122,7 +123,10 @@ fn recover_snoozes(
             }
             Err(_) => {
                 tracing::warn!(alarm_id = %snooze.alarm_id, "Invalid SnoozeUntil — clearing");
-                let _ = conn.execute("DELETE FROM SnoozeState WHERE AlarmId = ?1", params![snooze.alarm_id]);
+                let _ = conn.execute(
+                    "DELETE FROM SnoozeState WHERE AlarmId = ?1",
+                    params![snooze.alarm_id],
+                );
             }
         }
     }
@@ -130,10 +134,7 @@ fn recover_snoozes(
 
 // ── Polling Loop ──
 
-async fn poll_due_alarms(
-    pool: &Arc<Mutex<Connection>>,
-    app_handle: &tauri::AppHandle,
-) {
+async fn poll_due_alarms(pool: &Arc<Mutex<Connection>>, app_handle: &tauri::AppHandle) {
     let conn = pool.lock().await;
     let now = Utc::now();
     let tz = load_timezone(&conn);
@@ -159,7 +160,11 @@ async fn poll_due_alarms(
             tracing::warn!(alarm_id = %alarm.alarm_id, "Alarm missed (>{MISSED_ALARM_GRACE_SECS}s late)");
             log_alarm_event(&conn, &alarm.alarm_id, AlarmEventType::Missed);
             advance_next_fire_time(&conn, alarm, &tz);
-            let labels = vec![if alarm.label.is_empty() { alarm.time.clone() } else { alarm.label.clone() }];
+            let labels = vec![if alarm.label.is_empty() {
+                alarm.time.clone()
+            } else {
+                alarm.label.clone()
+            }];
             crate::notifications::send_missed_alarms(app_handle, &labels);
             emit_missed_alarms(app_handle, &labels);
         } else {
@@ -185,7 +190,7 @@ fn query_due_alarms(conn: &Connection, now: &DateTime<Utc>) -> Vec<AlarmRow> {
          AND DeletedAt IS NULL \
          AND NextFireTime IS NOT NULL \
          AND NextFireTime <= ?1 \
-         ORDER BY NextFireTime ASC"
+         ORDER BY NextFireTime ASC",
     ) {
         Ok(s) => s,
         Err(e) => {
@@ -306,10 +311,7 @@ fn emit_missed_alarms(app_handle: &tauri::AppHandle, labels: &[String]) {
 
 /// Called by wake_listener when system resumes from sleep.
 /// Re-checks for missed alarms immediately.
-pub async fn on_system_wake(
-    pool: &Arc<Mutex<Connection>>,
-    app_handle: &tauri::AppHandle,
-) {
+pub async fn on_system_wake(pool: &Arc<Mutex<Connection>>, app_handle: &tauri::AppHandle) {
     tracing::info!("System wake detected — checking for missed alarms");
     poll_due_alarms(pool, app_handle).await;
 }

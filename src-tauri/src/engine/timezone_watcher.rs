@@ -1,8 +1,7 @@
 /// Timezone Change Detector — Monitors OS timezone changes and updates settings.
 /// Runs as a background task polling every 60 seconds.
-
-use std::sync::Arc;
 use rusqlite::Connection;
+use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Duration};
 
