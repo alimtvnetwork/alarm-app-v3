@@ -91,12 +91,8 @@ const AlarmOverlay = () => {
     : 0;
 
   const handleDismissClick = useCallback(() => {
-    if (alarm?.ChallengeType === ChallengeType.Math || alarm?.ChallengeType === ChallengeType.Typing) {
-      setShowChallenge(true);
-    } else {
-      dismiss();
-    }
-  }, [alarm, dismiss]);
+    dismiss();
+  }, [dismiss]);
 
   const handleChallengeSolved = useCallback(
     (solveTimeSec: number) => {
