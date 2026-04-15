@@ -103,7 +103,7 @@ impl AlarmPlayer {
 
     /// Check if audio is currently playing.
     pub fn is_playing(&self) -> bool {
-        self.current_sink.as_ref().map_or(false, |s| !s.empty())
+        self.current_sink.as_ref().is_some_and(|s| !s.empty())
     }
 }
 

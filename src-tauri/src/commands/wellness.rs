@@ -172,7 +172,7 @@ pub async fn check_bedtime(pool: State<'_, DbPool>) -> Result<BedtimeStatus, Ala
         (bedtime_total as i64 + 1440) - now_total as i64
     };
 
-    let is_soon = diff <= 60 && diff >= 0;
+    let is_soon = (0..=60).contains(&diff);
 
     Ok(BedtimeStatus {
         is_bedtime_soon: is_soon,

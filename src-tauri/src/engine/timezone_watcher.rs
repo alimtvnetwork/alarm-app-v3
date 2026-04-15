@@ -5,8 +5,6 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio::time::{interval, Duration};
 
-type DbPool = Arc<Mutex<Connection>>;
-
 /// Start a background task that detects timezone changes.
 pub fn start_timezone_watcher(pool: Arc<Mutex<Connection>>, app_handle: tauri::AppHandle) {
     tauri::async_runtime::spawn(async move {

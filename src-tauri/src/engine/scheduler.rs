@@ -199,7 +199,7 @@ pub fn recompute_all_fire_times(conn: &rusqlite::Connection, new_tz: &Tz) {
         };
 
     let alarms: Vec<_> = stmt
-        .query_map([], |row| crate::storage::models::AlarmRow::from_row(row))
+        .query_map([], crate::storage::models::AlarmRow::from_row)
         .unwrap_or_else(|_| panic!("query_map failed"))
         .filter_map(|r| r.ok())
         .collect();

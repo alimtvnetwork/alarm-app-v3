@@ -89,7 +89,7 @@ pub async fn snooze_alarm(
     let alarm_id_clone = payload.alarm_id.clone();
     let sleep_dur = std::time::Duration::from_secs(duration_min as u64 * 60);
     tokio::spawn(async move {
-        tokio::time::sleep(tokio::time::Duration::from(sleep_dur)).await;
+        tokio::time::sleep(sleep_dur).await;
         tracing::info!(alarm_id = %alarm_id_clone, "Snooze expired — emitting re-fire event");
         use tauri::Emitter;
         let _ = app_handle.emit("snooze-expired", &alarm_id_clone);

@@ -98,7 +98,7 @@ async fn run_dbus_listener(
         let header = msg.header();
         let is_sleep_signal = header
             .member()
-            .map_or(false, |m| m.as_str() == "PrepareForSleep");
+            .is_some_and(|m| m.as_str() == "PrepareForSleep");
         if !is_sleep_signal {
             continue;
         }
