@@ -71,7 +71,7 @@ const DigitalTime = () => {
   const [now, setNow] = useState(new Date());
   const is24Hour = useSettingsStore((s) => s.settings.Is24Hour);
   const timeZone = useSettingsStore((s) => s.settings.SystemTimezone);
-  const alarms = useAlarmStore((s) => s.alarms);
+  
   const { t } = useTranslation();
 
   useEffect(() => {
