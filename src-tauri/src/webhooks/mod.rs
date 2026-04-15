@@ -66,10 +66,7 @@ pub fn load_webhooks_for_alarm(
 }
 
 /// Deliver a single webhook with retry logic (exponential backoff).
-pub async fn deliver_webhook(
-    client: &Client,
-    webhook: &WebhookConfig,
-) -> WebhookResult {
+pub async fn deliver_webhook(client: &Client, webhook: &WebhookConfig) -> WebhookResult {
     let mut last_error: Option<String> = None;
 
     for attempt in 1..=MAX_RETRIES {
@@ -126,10 +123,7 @@ pub async fn deliver_webhook(
 }
 
 /// Fire all webhooks for an alarm (called by alarm engine on fire).
-pub async fn fire_webhooks_for_alarm(
-    conn: &Connection,
-    alarm_id: &str,
-) -> Vec<WebhookResult> {
+pub async fn fire_webhooks_for_alarm(conn: &Connection, alarm_id: &str) -> Vec<WebhookResult> {
     let webhooks = match load_webhooks_for_alarm(conn, alarm_id) {
         Ok(w) => w,
         Err(e) => {
@@ -165,10 +159,7 @@ pub async fn fire_webhooks_for_alarm(
 }
 
 /// Send a single HTTP POST request.
-async fn send_request(
-    client: &Client,
-    webhook: &WebhookConfig,
-) -> Result<u16, WebhookError> {
+async fn send_request(client: &Client, webhook: &WebhookConfig) -> Result<u16, WebhookError> {
     let mut request = client.post(&webhook.url);
 
     if let Some(ref payload) = webhook.payload {

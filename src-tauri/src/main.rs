@@ -9,7 +9,6 @@ use tokio::sync::Mutex;
 use tracing_appender::rolling;
 use tracing_subscriber::{fmt, prelude::*, EnvFilter};
 
-
 use alarm_app::storage::db;
 
 mod commands_registration;
@@ -35,13 +34,11 @@ fn main() {
                 .path()
                 .app_data_dir()
                 .expect("FATAL: Failed to resolve app data directory");
-            std::fs::create_dir_all(&app_dir)
-                .expect("FATAL: Failed to create app data directory");
+            std::fs::create_dir_all(&app_dir).expect("FATAL: Failed to create app data directory");
 
             // Step 2: Open SQLite connection
             let db_path = app_dir.join("alarm-app.db");
-            let mut conn = Connection::open(&db_path)
-                .expect("FATAL: Failed to open database");
+            let mut conn = Connection::open(&db_path).expect("FATAL: Failed to open database");
 
             // Step 3: Run migrations
             if let Err(e) = db::run_migrations(&mut conn) {
@@ -81,10 +78,7 @@ fn main() {
             ));
             let engine_pool_clone = engine_pool.clone();
             let engine_handle = app_handle.clone();
-            alarm_app::engine::alarm_engine::start_engine(
-                engine_pool.clone(),
-                app_handle.clone(),
-            );
+            alarm_app::engine::alarm_engine::start_engine(engine_pool.clone(), app_handle.clone());
 
             tracing::info!("Alarm engine started");
 

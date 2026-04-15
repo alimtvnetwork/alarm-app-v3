@@ -7,9 +7,9 @@ use tauri::{
     AppHandle, Manager,
 };
 
+use rusqlite::Connection;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use rusqlite::Connection;
 
 type DbPool = Arc<Mutex<Connection>>;
 
@@ -23,19 +23,17 @@ pub fn setup_tray(app: &AppHandle) -> Result<TrayIcon, Box<dyn std::error::Error
     let tray = TrayIconBuilder::new()
         .tooltip("Alarm App")
         .menu(&menu)
-        .on_menu_event(move |app, event| {
-            match event.id.as_ref() {
-                "show" => {
-                    if let Some(window) = app.get_webview_window("main") {
-                        let _ = window.show();
-                        let _ = window.set_focus();
-                    }
+        .on_menu_event(move |app, event| match event.id.as_ref() {
+            "show" => {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.set_focus();
                 }
-                "quit" => {
-                    app.exit(0);
-                }
-                _ => {}
             }
+            "quit" => {
+                app.exit(0);
+            }
+            _ => {}
         })
         .build(app)?;
 
