@@ -243,7 +243,7 @@ Currently uses **localStorage** — data persists in-browser but is not synced a
 |---|---|
 | **GitHub** | [github.com/ab-mahin](https://github.com/ab-mahin) |
 | **Facebook** | [abmahin624460](https://www.facebook.com/abmahin624460/) |
-| **Codeforces** | [codeforces.com/profile/Ab.Mahin](https://codeforces.com/profile/Ab.Mahin) |
+| **Codeforces** | [codeforces.com/profile/Ab-Mahin](https://codeforces.com/profile/Ab-Mahin) |
 
 ---
 
