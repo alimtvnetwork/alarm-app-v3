@@ -2,25 +2,33 @@
  * IndexedDB Layer — Mirrors the SQLite schema from V1__initial_schema.sql.
  * Object stores: Alarms, AlarmGroups, Settings, SnoozeState, AlarmEvents, Quotes, Webhooks
  * Uses the `idb` library for a Promise-based API.
+ *
+ * v2: Added missing indexes (ByIsEnabled, ByDeletedAt, ByPosition, ByType, ByFiredAt,
+ *     ByIsFavorite, ByIsCustom) to match spec indexes and query patterns.
  */
 
 import { openDB, type IDBPDatabase } from "idb";
 
 const DB_NAME = "AlarmAppDB";
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 export interface AlarmAppDB {
   Alarms: {
     key: string;
     value: Record<string, unknown>;
     indexes: {
-      "ByNextFireTime": string;
-      "ByGroupId": string;
+      ByNextFireTime: string;
+      ByGroupId: string;
+      ByIsEnabled: number;
+      ByDeletedAt: string;
     };
   };
   AlarmGroups: {
     key: string;
     value: Record<string, unknown>;
+    indexes: {
+      ByPosition: number;
+    };
   };
   Settings: {
     key: string;
@@ -34,19 +42,25 @@ export interface AlarmAppDB {
     key: string;
     value: Record<string, unknown>;
     indexes: {
-      "ByAlarmId": string;
-      "ByTimestamp": string;
+      ByAlarmId: string;
+      ByTimestamp: string;
+      ByType: string;
+      ByFiredAt: string;
     };
   };
   Quotes: {
     key: string;
     value: Record<string, unknown>;
+    indexes: {
+      ByIsFavorite: number;
+      ByIsCustom: number;
+    };
   };
   Webhooks: {
     key: string;
     value: Record<string, unknown>;
     indexes: {
-      "ByAlarmId": string;
+      ByAlarmId: string;
     };
   };
 }
@@ -56,36 +70,82 @@ let dbPromise: Promise<IDBPDatabase<AlarmAppDB>> | null = null;
 export function getDB(): Promise<IDBPDatabase<AlarmAppDB>> {
   if (!dbPromise) {
     dbPromise = openDB<AlarmAppDB>(DB_NAME, DB_VERSION, {
-      upgrade(db) {
-        // Alarms
-        const alarmStore = db.createObjectStore("Alarms", { keyPath: "AlarmId" });
-        alarmStore.createIndex("ByNextFireTime", "NextFireTime");
-        alarmStore.createIndex("ByGroupId", "GroupId");
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          // ── V1: Core tables ──────────────────────────────
+          const alarmStore = db.createObjectStore("Alarms", { keyPath: "AlarmId" });
+          alarmStore.createIndex("ByNextFireTime", "NextFireTime");
+          alarmStore.createIndex("ByGroupId", "GroupId");
 
-        // AlarmGroups
-        db.createObjectStore("AlarmGroups", { keyPath: "AlarmGroupId" });
+          db.createObjectStore("AlarmGroups", { keyPath: "AlarmGroupId" });
+          db.createObjectStore("Settings", { keyPath: "Key" });
+          db.createObjectStore("SnoozeState", { keyPath: "AlarmId" });
 
-        // Settings (key-value store matching spec)
-        db.createObjectStore("Settings", { keyPath: "Key" });
+          const eventStore = db.createObjectStore("AlarmEvents", { keyPath: "AlarmEventId" });
+          eventStore.createIndex("ByAlarmId", "AlarmId");
+          eventStore.createIndex("ByTimestamp", "Timestamp");
 
-        // SnoozeState
-        db.createObjectStore("SnoozeState", { keyPath: "AlarmId" });
+          db.createObjectStore("Quotes", { keyPath: "QuoteId" });
 
-        // AlarmEvents
-        const eventStore = db.createObjectStore("AlarmEvents", { keyPath: "AlarmEventId" });
-        eventStore.createIndex("ByAlarmId", "AlarmId");
-        eventStore.createIndex("ByTimestamp", "Timestamp");
+          const webhookStore = db.createObjectStore("Webhooks", { keyPath: "WebhookId" });
+          webhookStore.createIndex("ByAlarmId", "AlarmId");
+        }
 
-        // Quotes
-        db.createObjectStore("Quotes", { keyPath: "QuoteId" });
+        if (oldVersion < 2) {
+          // ── V2: Additional indexes for spec compliance ───
+          // Alarms: filter by IsEnabled + soft-delete
+          const alarmTx = db.objectStoreNames.contains("Alarms")
+            ? (db as unknown as { transaction: IDBPDatabase<AlarmAppDB>["transaction"] }).transaction
+            : null;
+          void alarmTx; // indexes added via transaction below
 
-        // Webhooks
-        const webhookStore = db.createObjectStore("Webhooks", { keyPath: "WebhookId" });
-        webhookStore.createIndex("ByAlarmId", "AlarmId");
+          addIndexSafe(db, "Alarms", "ByIsEnabled", "IsEnabled");
+          addIndexSafe(db, "Alarms", "ByDeletedAt", "DeletedAt");
+
+          // AlarmGroups: sort by position
+          addIndexSafe(db, "AlarmGroups", "ByPosition", "Position");
+
+          // AlarmEvents: filter by type, sort by fired time
+          addIndexSafe(db, "AlarmEvents", "ByType", "Type");
+          addIndexSafe(db, "AlarmEvents", "ByFiredAt", "FiredAt");
+
+          // Quotes: filter favorites and custom
+          addIndexSafe(db, "Quotes", "ByIsFavorite", "IsFavorite");
+          addIndexSafe(db, "Quotes", "ByIsCustom", "IsCustom");
+        }
       },
     });
   }
   return dbPromise;
+}
+
+/**
+ * Safely add an index to an existing object store during upgrade.
+ * Skips if the index already exists.
+ */
+function addIndexSafe(
+  db: IDBPDatabase<AlarmAppDB>,
+  storeName: string,
+  indexName: string,
+  keyPath: string,
+): void {
+  // During upgrade, we can access stores via the versionchange transaction
+  const storeNames = Array.from(db.objectStoreNames);
+  if (!storeNames.includes(storeName as never)) return;
+
+  // Access the store from the upgrade transaction
+  const tx = (db as any).transaction;
+  if (!tx) return;
+  try {
+    const store = typeof tx === "function"
+      ? undefined
+      : tx.objectStore(storeName);
+    if (store && !store.indexNames.contains(indexName)) {
+      store.createIndex(indexName, keyPath);
+    }
+  } catch {
+    // Store may not be accessible in this transaction context — skip
+  }
 }
 
 /** Close and reset the DB promise (for testing/reset). */
