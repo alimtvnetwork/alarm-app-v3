@@ -8,7 +8,7 @@ const Header = () => {
   const location = useLocation();
   const { t } = useTranslation();
 
-  const isAlarmsPage = location.pathname === "/" || location.pathname === "/alarms";
+  const isAlarmsPage = location.pathname === "/alarms";
 
   const handleAddAlarm = () => {
     if (location.pathname !== "/alarms") {
