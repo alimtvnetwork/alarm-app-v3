@@ -50,7 +50,7 @@ fn main() {
             db::set_pragmas(&conn);
 
             // Step 5: Load settings
-            let settings = db::load_settings(&conn);
+            let _settings = db::load_settings(&conn);
 
             // Step 6a: Init logging
             init_logging(&app_dir);
