@@ -72,7 +72,7 @@ pub async fn deliver_webhook(client: &Client, webhook: &WebhookConfig) -> Webhoo
     for attempt in 1..=MAX_RETRIES {
         match send_request(client, webhook).await {
             Ok(status) => {
-                let is_success = status >= 200 && status < 300;
+                let is_success = (200..300).contains(&status);
                 if is_success {
                     tracing::info!(
                         webhook_id = %webhook.webhook_id,

@@ -6,7 +6,6 @@ use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
-use uuid::Uuid;
 
 use crate::errors::AlarmAppError;
 use crate::storage::models::{AlarmGroupRow, AlarmRow};

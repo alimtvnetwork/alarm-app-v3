@@ -10,8 +10,6 @@ use crate::audio::player::{self, AlarmPlayer};
 use crate::errors::AlarmAppError;
 use crate::storage::models::{AlarmSound, SoundCategory};
 
-type AudioState = Arc<Mutex<Option<AlarmPlayer>>>;
-
 /// Built-in sound library — 10 sounds across 4 categories.
 fn builtin_sounds() -> Vec<AlarmSound> {
     vec![

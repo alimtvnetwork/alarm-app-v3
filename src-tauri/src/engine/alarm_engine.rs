@@ -115,7 +115,7 @@ fn recover_snoozes(conn: &Connection, now: &DateTime<Utc>, app_handle: &tauri::A
                 let alarm_id = snooze.alarm_id.clone();
                 let handle = app_handle.clone();
                 tauri::async_runtime::spawn(async move {
-                    tokio::time::sleep(tokio::time::Duration::from(remaining)).await;
+                    tokio::time::sleep(remaining).await;
                     tracing::info!(alarm_id = %alarm_id, "Recovered snooze expired — re-firing");
                     use tauri::Emitter;
                     let _ = handle.emit("snooze-expired", &alarm_id);
@@ -199,7 +199,7 @@ fn query_due_alarms(conn: &Connection, now: &DateTime<Utc>) -> Vec<AlarmRow> {
         }
     };
 
-    stmt.query_map([&now_str], |row| AlarmRow::from_row(row))
+    stmt.query_map([&now_str], AlarmRow::from_row)
         .unwrap_or_else(|e| {
             tracing::error!(error = %e, "Failed to query due alarms");
             panic!("query_map failed");
