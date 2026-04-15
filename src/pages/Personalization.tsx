@@ -99,54 +99,53 @@ const Personalization = () => {
               Choose a color scheme for the entire app.
             </p>
           </CardHeader>
-          <CardContent>
-            <div className="flex items-end gap-0.5 overflow-x-auto pb-2 scrollbar-hide">
-              {SKIN_OPTIONS.map(({ value, label, colors }) => {
-                const isActive = (settings.ThemeSkin ?? "default") === value;
-                return (
-                  <Tooltip key={value}>
-                    <TooltipTrigger asChild>
-                      <button
-                        onClick={() => updateSettings({ ThemeSkin: value })}
-                        className={`flex flex-col items-center gap-0.5 rounded-xl p-1.5 shrink-0 transition-all ${
-                          isActive
-                            ? "bg-secondary/80 shadow-sm"
-                            : "hover:bg-secondary/40"
-                        }`}
-                      >
-                        <div className="flex rounded-full overflow-hidden">
-                          {colors.map((c, i) => (
-                            <div
-                              key={i}
-                              className="h-5 w-2.5"
-                              style={{ backgroundColor: c }}
-                            />
-                          ))}
-                        </div>
-                        <span className="text-[8px] font-body text-muted-foreground">{label}</span>
-                      </button>
-                    </TooltipTrigger>
-                    <TooltipContent>{label} theme</TooltipContent>
-                  </Tooltip>
-                );
-              })}
-            </div>
+          <CardContent className="space-y-2">
+            {[SKIN_OPTIONS.slice(0, 4), SKIN_OPTIONS.slice(4, 8), SKIN_OPTIONS.slice(8)].map((row, ri) => (
+              <div key={ri} className="flex gap-1">
+                {row.map(({ value, label, colors }) => {
+                  const isActive = (settings.ThemeSkin ?? "default") === value;
+                  return (
+                    <Tooltip key={value}>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => updateSettings({ ThemeSkin: value })}
+                          className={`flex flex-1 flex-col items-center gap-0.5 rounded-xl p-1.5 transition-all ${
+                            isActive
+                              ? "bg-secondary/80 shadow-sm"
+                              : "hover:bg-secondary/40"
+                          }`}
+                        >
+                          <div className="flex rounded-full overflow-hidden">
+                            {colors.map((c, i) => (
+                              <div
+                                key={i}
+                                className="h-5 w-2.5"
+                                style={{ backgroundColor: c }}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-[8px] font-body text-muted-foreground">{label}</span>
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>{label} theme</TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            ))}
           </CardContent>
         </Card>
 
         {/* Accent Color */}
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-sm font-heading">
-              <Palette className="h-4 w-4" />
-              Accent Color
-            </CardTitle>
-            <p className="text-xs text-muted-foreground font-body">
-              Changes buttons, highlights, and active indicators across the app.
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-3">
+          <CardContent className="flex items-center gap-3 p-4">
+            <div className="shrink-0">
+              <Label className="font-heading text-sm flex items-center gap-1.5">
+                <Palette className="h-3.5 w-3.5" />
+                Accent
+              </Label>
+            </div>
+            <div className="flex gap-2">
               {ACCENT_COLORS.map(({ value, label }) => {
                 const isActive = settings.AccentColor === value;
                 return (
@@ -154,20 +153,19 @@ const Personalization = () => {
                     <TooltipTrigger asChild>
                       <button
                         onClick={() => updateSettings({ AccentColor: value })}
-                        className="flex flex-col items-center gap-1"
                         aria-label={label}
+                        className="relative"
                       >
                         <div
-                          className={`relative h-10 w-10 rounded-full transition-transform ${
-                            isActive ? "scale-110 ring-2 ring-foreground ring-offset-2 ring-offset-background" : "hover:scale-105"
+                          className={`h-7 w-7 rounded-full transition-all ${
+                            isActive ? "ring-2 ring-foreground ring-offset-2 ring-offset-background scale-110" : "hover:scale-110"
                           }`}
                           style={{ backgroundColor: value }}
                         >
                           {isActive && (
-                            <Check className="absolute inset-0 m-auto h-5 w-5 text-white drop-shadow" />
+                            <Check className="absolute inset-0 m-auto h-3.5 w-3.5 text-white drop-shadow" />
                           )}
                         </div>
-                        <span className="text-[10px] text-muted-foreground font-body">{label}</span>
                       </button>
                     </TooltipTrigger>
                     <TooltipContent>{label}</TooltipContent>
