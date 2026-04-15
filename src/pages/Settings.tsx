@@ -226,6 +226,7 @@ const Settings = () => {
               <SelectItem value="ms">{t("settings.bahasaMelayu")}</SelectItem>
               <SelectItem value="zh">{t("settings.chinese")}</SelectItem>
               <SelectItem value="ja">{t("settings.japanese")}</SelectItem>
+              <SelectItem value="bn">{t("settings.bangla")}</SelectItem>
             </SelectContent>
           </Select>
         </CardContent>
