@@ -138,65 +138,55 @@ describe("ipc-adapter error handling", () => {
   it("listAlarms returns empty array when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
     const original = mock.listAlarms;
-    // @ts-expect-error - monkey-patch for test
     mock.listAlarms = () => Promise.reject(new Error("DB crash"));
 
     const result = await adapter.listAlarms();
     expect(result).toEqual([]);
 
-    // @ts-expect-error - restore
     mock.listAlarms = original;
   });
 
   it("getAlarm returns null when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
     const original = mock.getAlarm;
-    // @ts-expect-error - monkey-patch for test
     mock.getAlarm = () => Promise.reject(new Error("not found"));
 
     const result = await adapter.getAlarm("nonexistent");
     expect(result).toBeNull();
 
-    // @ts-expect-error - restore
     mock.getAlarm = original;
   });
 
   it("getSettings returns DEFAULT_SETTINGS when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
     const original = mock.getSettings;
-    // @ts-expect-error - monkey-patch for test
     mock.getSettings = () => Promise.reject(new Error("settings crash"));
 
     const result = await adapter.getSettings();
     expect(result).toEqual(DEFAULT_SETTINGS);
 
-    // @ts-expect-error - restore
     mock.getSettings = original;
   });
 
   it("listGroups returns empty array when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
     const original = mock.listGroups;
-    // @ts-expect-error - monkey-patch for test
     mock.listGroups = () => Promise.reject(new Error("group crash"));
 
     const result = await adapter.listGroups();
     expect(result).toEqual([]);
 
-    // @ts-expect-error - restore
     mock.listGroups = original;
   });
 
   it("listSounds returns empty array when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
     const original = mock.listSounds;
-    // @ts-expect-error - monkey-patch for test
     mock.listSounds = () => { throw new Error("sounds crash"); };
 
     const result = await adapter.listSounds();
     expect(result).toEqual([]);
 
-    // @ts-expect-error - restore
     mock.listSounds = original;
   });
 });
