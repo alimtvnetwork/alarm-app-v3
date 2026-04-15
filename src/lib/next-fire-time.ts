@@ -154,6 +154,7 @@ function computeWeekly(alarm: Alarm, time: ClockTime, now: Date, timeZone: strin
 export function computeNextFireTime(
   alarm: Alarm,
   timeZone = DEFAULT_ALARM_TIMEZONE,
+  now = new Date(),
 ): string | null {
   if (!alarm.IsEnabled) return null;
 
@@ -161,7 +162,6 @@ export function computeNextFireTime(
   if (!time) return null;
 
   const resolvedTimeZone = normalizeAlarmTimezone(timeZone);
-  const now = new Date();
 
   if (alarm.Repeat.Type === RepeatType.Once) {
     return computeOnce(alarm, time, now, resolvedTimeZone);

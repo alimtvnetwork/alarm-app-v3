@@ -35,7 +35,9 @@ pub async fn snooze_alarm(
         .map_err(|_| AlarmAppError::Validation("Alarm not found".into()))?;
 
     if max_count == 0 {
-        return Err(AlarmAppError::Validation("This alarm does not allow snoozing".into()));
+        return Err(AlarmAppError::Validation(
+            "This alarm does not allow snoozing".into(),
+        ));
     }
 
     let duration_min = payload.duration_min.unwrap_or(snooze_dur as u32);
@@ -51,7 +53,9 @@ pub async fn snooze_alarm(
 
     let new_count = current_count + 1;
     if new_count > max_count {
-        return Err(AlarmAppError::Validation("Maximum snooze count reached".into()));
+        return Err(AlarmAppError::Validation(
+            "Maximum snooze count reached".into(),
+        ));
     }
 
     let now = chrono::Utc::now();
@@ -116,10 +120,7 @@ pub async fn get_snooze_state(
 
 /// Cancel an active snooze (on dismiss or alarm deletion).
 #[tauri::command]
-pub async fn cancel_snooze(
-    pool: State<'_, DbPool>,
-    alarm_id: String,
-) -> Result<(), AlarmAppError> {
+pub async fn cancel_snooze(pool: State<'_, DbPool>, alarm_id: String) -> Result<(), AlarmAppError> {
     let conn = pool.lock().await;
     conn.execute(
         "DELETE FROM SnoozeState WHERE AlarmId = ?1",
@@ -131,10 +132,7 @@ pub async fn cancel_snooze(
 
 /// Dismiss an alarm: clear snooze state and log dismiss event.
 #[tauri::command]
-pub async fn dismiss_alarm(
-    pool: State<'_, DbPool>,
-    alarm_id: String,
-) -> Result<(), AlarmAppError> {
+pub async fn dismiss_alarm(pool: State<'_, DbPool>, alarm_id: String) -> Result<(), AlarmAppError> {
     let conn = pool.lock().await;
 
     // Clear snooze state
