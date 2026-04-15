@@ -188,15 +188,15 @@ export async function toggleAlarm(alarmId: string, isEnabled: boolean): Promise<
 
 export async function reorderAlarms(alarmIds: string[]): Promise<void> {
   await ensureInitialized();
-  const db = await getDB();
-  const tx = db.transaction("Alarms", "readwrite");
-  for (let i = 0; i < alarmIds.length; i++) {
-    const alarm = await tx.store.get(alarmIds[i]);
-    if (alarm) {
-      await tx.store.put({ ...alarm, Position: i });
+  await runTransaction(["Alarms"], async (tx) => {
+    const store = tx.objectStore("Alarms");
+    for (let i = 0; i < alarmIds.length; i++) {
+      const alarm = await store.get(alarmIds[i]);
+      if (alarm) {
+        await store.put({ ...alarm, Position: i });
+      }
     }
-  }
-  await tx.done;
+  });
 }
 
 // ─── Group Commands ──────────────────────────────────────────────
@@ -223,21 +223,19 @@ export async function updateGroup(group: AlarmGroup): Promise<AlarmGroup> {
 
 export async function deleteGroup(groupId: string): Promise<void> {
   await ensureInitialized();
-  const db = await getDB();
-  await db.delete("AlarmGroups", groupId);
-  // Unassign alarms from deleted group
-  const tx = db.transaction("Alarms", "readwrite");
-  const allAlarms = await tx.store.getAll();
-  for (const alarm of allAlarms) {
-    if ((alarm as unknown as Alarm).GroupId === groupId) {
-      await tx.store.put({
-        ...alarm,
-        GroupId: null,
-        UpdatedAt: new Date().toISOString(),
-      });
+  await runTransaction(["AlarmGroups", "Alarms"], async (tx) => {
+    await tx.objectStore("AlarmGroups").delete(groupId);
+    const allAlarms = await tx.objectStore("Alarms").getAll();
+    for (const alarm of allAlarms) {
+      if ((alarm as unknown as Alarm).GroupId === groupId) {
+        await tx.objectStore("Alarms").put({
+          ...alarm,
+          GroupId: null,
+          UpdatedAt: new Date().toISOString(),
+        });
+      }
     }
-  }
-  await tx.done;
+  });
 }
 
 // ─── Settings Commands ───────────────────────────────────────────
