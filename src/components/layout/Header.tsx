@@ -23,28 +23,28 @@ const Header = () => {
     <header className="sticky top-0 z-40 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="flex items-center justify-between px-6 py-3">
         <h1 className="text-lg font-heading font-semibold">{t("header.title")}</h1>
-        {isAlarmsPage && (
-          <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1">
+          {isAlarmsPage && (
             <Button
               variant="ghost"
               size="icon"
-              className="h-9 w-9"
+              className="h-9 w-9 hover:bg-transparent"
               aria-label={t("header.addAlarm")}
               onClick={handleAddAlarm}
             >
               <Plus className="h-5 w-5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              aria-label={t("header.settings")}
-              onClick={() => navigate("/settings")}
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-          </div>
-        )}
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-9 w-9 hover:bg-transparent"
+            aria-label={t("header.settings")}
+            onClick={() => navigate("/settings")}
+          >
+            <Settings className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
     </header>
   );
