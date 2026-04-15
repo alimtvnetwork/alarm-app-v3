@@ -80,12 +80,12 @@ describe("mock-ipc integration", () => {
     });
 
     it("updates alarm fields", async () => {
-      const alarm = makeAlarm({ Label: "Old" });
+      const alarm = makeAlarm({ Label: "Old", UpdatedAt: "2020-01-01T00:00:00Z" });
       await mockIpc.createAlarm(alarm);
 
       const updated = await mockIpc.updateAlarm({ ...alarm, Label: "New" });
       expect(updated.Label).toBe("New");
-      expect(updated.UpdatedAt).not.toBe(alarm.UpdatedAt);
+      expect(updated.UpdatedAt).not.toBe("2020-01-01T00:00:00Z");
 
       const fetched = await mockIpc.getAlarm(alarm.AlarmId);
       expect(fetched!.Label).toBe("New");
