@@ -16,7 +16,7 @@ type DbPool = Arc<Mutex<rusqlite::Connection>>;
 #[derive(Deserialize)]
 #[serde(rename_all = "PascalCase")]
 pub struct SleepCalcPayload {
-    pub wake_time: String,       // HH:MM
+    pub wake_time: String,        // HH:MM
     pub sleep_cycles: Option<u8>, // default 5-6
 }
 
@@ -62,8 +62,7 @@ pub async fn calculate_bedtime(
     }
 
     let default_cycles = payload.sleep_cycles.unwrap_or(5) as u32;
-    let duration_hours =
-        (default_cycles * SLEEP_CYCLE_MIN) as f64 / 60.0;
+    let duration_hours = (default_cycles * SLEEP_CYCLE_MIN) as f64 / 60.0;
 
     Ok(SleepCalcResult {
         recommended_bedtimes: bedtimes,
@@ -125,9 +124,7 @@ pub struct BedtimeStatus {
 
 /// Check if bedtime is approaching based on the earliest enabled alarm.
 #[tauri::command]
-pub async fn check_bedtime(
-    pool: State<'_, DbPool>,
-) -> Result<BedtimeStatus, AlarmAppError> {
+pub async fn check_bedtime(pool: State<'_, DbPool>) -> Result<BedtimeStatus, AlarmAppError> {
     let conn = pool.lock().await;
 
     // Get earliest enabled alarm time

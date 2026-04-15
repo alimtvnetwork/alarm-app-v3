@@ -71,9 +71,8 @@ pub fn list_webhooks(
     alarm_id: String,
 ) -> Result<Vec<WebhookConfig>, AlarmAppError> {
     let conn = db.lock().unwrap();
-    let mut stmt = conn.prepare(
-        "SELECT WebhookId, AlarmId, Url, Payload FROM Webhooks WHERE AlarmId = ?1",
-    )?;
+    let mut stmt =
+        conn.prepare("SELECT WebhookId, AlarmId, Url, Payload FROM Webhooks WHERE AlarmId = ?1")?;
 
     let webhooks = stmt
         .query_map(params![alarm_id], |row| {

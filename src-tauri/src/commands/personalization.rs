@@ -17,9 +17,7 @@ type DbPool = Arc<Mutex<rusqlite::Connection>>;
 
 /// Get a random quote (favored first, then random).
 #[tauri::command]
-pub async fn get_daily_quote(
-    pool: State<'_, DbPool>,
-) -> Result<Quote, AlarmAppError> {
+pub async fn get_daily_quote(pool: State<'_, DbPool>) -> Result<Quote, AlarmAppError> {
     let conn = pool.lock().await;
 
     // Try a favorite first
@@ -44,9 +42,7 @@ pub async fn get_daily_quote(
 
 /// List all quotes.
 #[tauri::command]
-pub async fn list_quotes(
-    pool: State<'_, DbPool>,
-) -> Result<Vec<Quote>, AlarmAppError> {
+pub async fn list_quotes(pool: State<'_, DbPool>) -> Result<Vec<Quote>, AlarmAppError> {
     let conn = pool.lock().await;
     let mut stmt = conn.prepare("SELECT * FROM Quotes ORDER BY CreatedAt DESC")?;
     let quotes = stmt
@@ -128,10 +124,7 @@ pub async fn toggle_quote_favorite(
 
 /// Delete a custom quote.
 #[tauri::command]
-pub async fn delete_quote(
-    pool: State<'_, DbPool>,
-    quote_id: String,
-) -> Result<(), AlarmAppError> {
+pub async fn delete_quote(pool: State<'_, DbPool>, quote_id: String) -> Result<(), AlarmAppError> {
     let conn = pool.lock().await;
     let rows = conn.execute(
         "DELETE FROM Quotes WHERE QuoteId = ?1 AND IsCustom = 1",
@@ -150,9 +143,7 @@ pub async fn delete_quote(
 
 /// Get the user's on-time dismissal streak.
 #[tauri::command]
-pub async fn get_streak(
-    pool: State<'_, DbPool>,
-) -> Result<StreakData, AlarmAppError> {
+pub async fn get_streak(pool: State<'_, DbPool>) -> Result<StreakData, AlarmAppError> {
     let conn = pool.lock().await;
 
     // Get dismissed events from the last 90 days, grouped by date
@@ -160,7 +151,7 @@ pub async fn get_streak(
         "SELECT DATE(FiredAt) as day, COUNT(*) as cnt \
          FROM AlarmEvents \
          WHERE Type = 'Dismissed' AND FiredAt >= DATE('now', '-90 days') \
-         GROUP BY day ORDER BY day DESC"
+         GROUP BY day ORDER BY day DESC",
     )?;
 
     let days: Vec<String> = stmt

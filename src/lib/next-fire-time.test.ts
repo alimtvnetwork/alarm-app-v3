@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Alarm } from "@/types/alarm";
 import { DEFAULT_REPEAT_PATTERN, RepeatType } from "@/types/alarm";
 import { DEFAULT_ALARM_TIMEZONE, normalizeAlarmTimezone } from "@/lib/alarm-timezone";
@@ -35,31 +35,24 @@ function buildAlarm(partial: Partial<Alarm>): Alarm {
 }
 
 describe("computeNextFireTime", () => {
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it("computes the next daily alarm in Malaysia time", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-13T00:00:00.000Z"));
+    const now = new Date("2026-04-13T00:00:00.000Z");
 
-    const nextFireTime = computeNextFireTime(buildAlarm({}), DEFAULT_ALARM_TIMEZONE);
+    const nextFireTime = computeNextFireTime(buildAlarm({}), DEFAULT_ALARM_TIMEZONE, now);
 
     expect(nextFireTime).toBe("2026-04-13T00:01:00.000Z");
   });
 
   it("rolls the next daily alarm to tomorrow after the local time passes", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-13T00:02:00.000Z"));
+    const now = new Date("2026-04-13T00:02:00.000Z");
 
-    const nextFireTime = computeNextFireTime(buildAlarm({}), DEFAULT_ALARM_TIMEZONE);
+    const nextFireTime = computeNextFireTime(buildAlarm({}), DEFAULT_ALARM_TIMEZONE, now);
 
     expect(nextFireTime).toBe("2026-04-14T00:01:00.000Z");
   });
 
   it("preserves explicit once dates in Malaysia time", () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(new Date("2026-04-12T16:00:00.000Z"));
+    const now = new Date("2026-04-12T16:00:00.000Z");
 
     const nextFireTime = computeNextFireTime(
       buildAlarm({
@@ -68,6 +61,7 @@ describe("computeNextFireTime", () => {
         Repeat: { ...DEFAULT_REPEAT_PATTERN, Type: RepeatType.Once },
       }),
       DEFAULT_ALARM_TIMEZONE,
+      now,
     );
 
     expect(nextFireTime).toBe("2026-04-12T23:30:00.000Z");
