@@ -6,9 +6,16 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { deleteDB } from "@/lib/indexed-db";
 import type { Alarm, AlarmGroup, AlarmEvent } from "@/types/alarm";
-import { DEFAULT_SETTINGS, AlarmEventType, RepeatType, ChallengeType, ChallengeDifficulty, DEFAULT_REPEAT_PATTERN } from "@/types/alarm";
+import {
+  DEFAULT_SETTINGS,
+  AlarmEventType,
+  RepeatType,
+  ChallengeType,
+  ChallengeDifficulty,
+  ThemeMode,
+  DEFAULT_REPEAT_PATTERN,
+} from "@/types/alarm";
 
-// We need to reset the init promise between tests
 let mockIpc: typeof import("@/lib/mock-ipc");
 
 function makeAlarm(overrides: Partial<Alarm> = {}): Alarm {
@@ -19,21 +26,25 @@ function makeAlarm(overrides: Partial<Alarm> = {}): Alarm {
     Date: null,
     Label: "Test Alarm",
     IsEnabled: true,
-    RepeatType: RepeatType.None,
-    RepeatPattern: DEFAULT_REPEAT_PATTERN,
-    Sound: "default.mp3",
-    Volume: 80,
-    IsVibrationEnabled: true,
+    IsPreviousEnabled: null,
+    Repeat: { ...DEFAULT_REPEAT_PATTERN },
+    GroupId: null,
     SnoozeDurationMin: 5,
     MaxSnoozeCount: 3,
-    ChallengeType: ChallengeType.None,
-    ChallengeDifficulty: ChallengeDifficulty.Medium,
-    GroupId: null,
+    SoundFile: "default.mp3",
+    IsVibrationEnabled: true,
+    IsGradualVolume: false,
+    GradualVolumeDurationSec: 30,
+    AutoDismissMin: 15,
+    ChallengeType: null,
+    ChallengeDifficulty: null,
+    ChallengeShakeCount: null,
+    ChallengeStepCount: null,
+    NextFireTime: null,
     Position: 0,
-    Timezone: "Asia/Kuala_Lumpur",
+    DeletedAt: null,
     CreatedAt: now,
     UpdatedAt: now,
-    DeletedAt: null,
     ...overrides,
   };
 }
@@ -41,9 +52,7 @@ function makeAlarm(overrides: Partial<Alarm> = {}): Alarm {
 describe("mock-ipc integration", () => {
   beforeEach(async () => {
     await deleteDB();
-    // Re-import to reset initPromise
     const mod = await import("@/lib/mock-ipc");
-    // Reset the init promise by calling resetAllData
     await mod.resetAllData();
     mockIpc = mod;
   });
@@ -88,11 +97,9 @@ describe("mock-ipc integration", () => {
 
       await mockIpc.deleteAlarm(alarm.AlarmId);
 
-      // listAlarms filters out deleted
       const list = await mockIpc.listAlarms();
       expect(list.find((a) => a.AlarmId === alarm.AlarmId)).toBeUndefined();
 
-      // But getAlarm still returns it (with DeletedAt set)
       const raw = await mockIpc.getAlarm(alarm.AlarmId);
       expect(raw).not.toBeNull();
       expect(raw!.DeletedAt).not.toBeNull();
@@ -117,7 +124,6 @@ describe("mock-ipc integration", () => {
       await mockIpc.createAlarm(a2);
       await mockIpc.createAlarm(a3);
 
-      // Reverse order
       await mockIpc.reorderAlarms([a3.AlarmId, a2.AlarmId, a1.AlarmId]);
 
       const r1 = await mockIpc.getAlarm(a3.AlarmId);
@@ -176,11 +182,9 @@ describe("mock-ipc integration", () => {
 
       await mockIpc.deleteGroup("g-cascade");
 
-      // Group removed
       const groups = await mockIpc.listGroups();
       expect(groups.find((g) => g.AlarmGroupId === "g-cascade")).toBeUndefined();
 
-      // Alarm's GroupId nullified
       const updated = await mockIpc.getAlarm(alarm.AlarmId);
       expect(updated!.GroupId).toBeNull();
     });
@@ -196,11 +200,10 @@ describe("mock-ipc integration", () => {
     });
 
     it("updates partial settings and persists", async () => {
-      await mockIpc.updateSettings({ Theme: "dark", Is24Hour: true });
+      await mockIpc.updateSettings({ Theme: ThemeMode.Dark, Is24Hour: true });
       const settings = await mockIpc.getSettings();
-      expect(settings.Theme).toBe("dark");
+      expect(settings.Theme).toBe(ThemeMode.Dark);
       expect(settings.Is24Hour).toBe(true);
-      // Other defaults preserved
       expect(settings.DefaultSnoozeDurationMin).toBe(DEFAULT_SETTINGS.DefaultSnoozeDurationMin);
     });
   });
@@ -248,22 +251,40 @@ describe("mock-ipc integration", () => {
       const e1: AlarmEvent = {
         AlarmEventId: crypto.randomUUID(),
         AlarmId: "a-1",
-        EventType: AlarmEventType.Fired,
+        Type: AlarmEventType.Fired,
+        FiredAt: "2026-01-01T08:00:00Z",
+        DismissedAt: null,
+        SnoozeCount: 0,
+        ChallengeType: null,
+        ChallengeSolveTimeSec: null,
+        SleepQuality: null,
+        Mood: null,
+        AlarmLabelSnapshot: "Test",
+        AlarmTimeSnapshot: "08:00",
         Timestamp: "2026-01-01T08:00:00Z",
       };
       const e2: AlarmEvent = {
         AlarmEventId: crypto.randomUUID(),
         AlarmId: "a-1",
-        EventType: AlarmEventType.Dismissed,
+        Type: AlarmEventType.Dismissed,
+        FiredAt: "2026-01-01T08:05:00Z",
+        DismissedAt: "2026-01-01T08:05:00Z",
+        SnoozeCount: 0,
+        ChallengeType: null,
+        ChallengeSolveTimeSec: null,
+        SleepQuality: null,
+        Mood: null,
+        AlarmLabelSnapshot: "Test",
+        AlarmTimeSnapshot: "08:00",
         Timestamp: "2026-01-01T08:05:00Z",
       };
       await mockIpc.createAlarmEvent(e1);
       await mockIpc.createAlarmEvent(e2);
 
       const events = await mockIpc.listAlarmEvents();
-      // e2 is newer, should be first
-      expect(events[0].AlarmEventId).toBe(e2.AlarmEventId);
-      expect(events[1].AlarmEventId).toBe(e1.AlarmEventId);
+      const ourEvents = events.filter((e) => e.AlarmId === "a-1");
+      expect(ourEvents[0].AlarmEventId).toBe(e2.AlarmEventId);
+      expect(ourEvents[1].AlarmEventId).toBe(e1.AlarmEventId);
     });
   });
 
@@ -273,7 +294,7 @@ describe("mock-ipc integration", () => {
     it("returns mock sounds list", () => {
       const sounds = mockIpc.listSounds();
       expect(sounds.length).toBeGreaterThan(0);
-      expect(sounds[0]).toHaveProperty("SoundId");
+      expect(sounds[0]).toHaveProperty("AlarmSoundId");
     });
   });
 });
