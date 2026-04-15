@@ -3,9 +3,9 @@
 
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
+use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
-use std::sync::Arc;
 
 use crate::errors::AlarmAppError;
 

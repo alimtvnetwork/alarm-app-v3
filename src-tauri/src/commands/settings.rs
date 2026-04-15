@@ -1,7 +1,7 @@
 use rusqlite::params;
+use std::sync::Arc;
 use tauri::State;
 use tokio::sync::Mutex;
-use std::sync::Arc;
 
 use crate::errors::AlarmAppError;
 use crate::storage::db;

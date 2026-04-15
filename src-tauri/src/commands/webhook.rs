@@ -1,7 +1,7 @@
 use rusqlite::params;
 use serde::{Deserialize, Serialize};
-use tauri::State;
 use std::sync::Mutex;
+use tauri::State;
 
 use crate::errors::AlarmAppError;
 use crate::webhooks::{WebhookConfig, WebhookResult};
