@@ -4,7 +4,7 @@ import BottomNav from "./BottomNav";
 
 const AppLayout = () => {
   return (
-    <div className="relative mx-auto min-h-screen w-full max-w-[448px] bg-background">
+    <div className="relative mx-auto min-h-screen w-full max-w-[448px] bg-background overflow-y-auto scrollbar-none [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
       {/* Skip to content link for keyboard users */}
       <a
         href="#main-content"
