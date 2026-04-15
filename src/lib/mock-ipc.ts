@@ -256,13 +256,12 @@ export async function updateSettings(partial: Partial<Settings>): Promise<Settin
   const current = await getSettings();
   const updated = { ...current, ...partial };
   updated.SystemTimezone = normalizeAlarmTimezone(updated.SystemTimezone);
-  const db = await getDB();
   const rows = settingsObjToRows(updated);
-  const tx = db.transaction("Settings", "readwrite");
-  for (const row of rows) {
-    await tx.store.put(row);
-  }
-  await tx.done;
+  await runTransaction(["Settings"], async (tx) => {
+    for (const row of rows) {
+      await tx.objectStore("Settings").put(row);
+    }
+  });
   return updated;
 }
 
