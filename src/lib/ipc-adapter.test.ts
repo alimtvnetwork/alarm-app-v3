@@ -133,60 +133,46 @@ describe("ipc-adapter error handling", () => {
   beforeEach(() => {
     localStorage.clear();
     seed();
+    vi.restoreAllMocks();
   });
 
   it("listAlarms returns empty array when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
-    const original = mock.listAlarms;
-    mock.listAlarms = () => Promise.reject(new Error("DB crash"));
+    vi.spyOn(mock, "listAlarms").mockRejectedValue(new Error("DB crash"));
 
     const result = await adapter.listAlarms();
     expect(result).toEqual([]);
-
-    mock.listAlarms = original;
   });
 
   it("getAlarm returns null when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
-    const original = mock.getAlarm;
-    mock.getAlarm = () => Promise.reject(new Error("not found"));
+    vi.spyOn(mock, "getAlarm").mockRejectedValue(new Error("not found"));
 
     const result = await adapter.getAlarm("nonexistent");
     expect(result).toBeNull();
-
-    mock.getAlarm = original;
   });
 
   it("getSettings returns DEFAULT_SETTINGS when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
-    const original = mock.getSettings;
-    mock.getSettings = () => Promise.reject(new Error("settings crash"));
+    vi.spyOn(mock, "getSettings").mockRejectedValue(new Error("settings crash"));
 
     const result = await adapter.getSettings();
     expect(result).toEqual(DEFAULT_SETTINGS);
-
-    mock.getSettings = original;
   });
 
   it("listGroups returns empty array when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
-    const original = mock.listGroups;
-    mock.listGroups = () => Promise.reject(new Error("group crash"));
+    vi.spyOn(mock, "listGroups").mockRejectedValue(new Error("group crash"));
 
     const result = await adapter.listGroups();
     expect(result).toEqual([]);
-
-    mock.listGroups = original;
   });
 
   it("listSounds returns empty array when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
-    const original = mock.listSounds;
-    mock.listSounds = () => { throw new Error("sounds crash"); };
+    vi.spyOn(mock, "listSounds").mockImplementation(() => { throw new Error("sounds crash"); });
 
     const result = await adapter.listSounds();
     expect(result).toEqual([]);
-
-    mock.listSounds = original;
   });
 });
