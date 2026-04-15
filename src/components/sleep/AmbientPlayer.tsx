@@ -81,11 +81,12 @@ const SOUNDS: AmbientSound[] = [
     emoji: "🌲",
     generate: (ctx) => {
       // Brown noise with slight filter for forest ambience
-      const source = createNoiseSource(ctx, "brown");
+      const source = createNoiseSource(ctx, "brown") as AudioBufferSourceNode;
       const filter = ctx.createBiquadFilter();
       filter.type = "lowpass";
       filter.frequency.value = 800;
       source.connect(filter);
+      source.start();
       return filter;
     },
   },
