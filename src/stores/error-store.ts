@@ -22,7 +22,7 @@ import { toast } from "sonner";
 // ─── Constants ───────────────────────────────────────────────────
 
 const MAX_RECENT_ERRORS = 50;
-const IPC_TIMEOUT_MS = 5000;
+const IPC_TIMEOUT_MS = 15000;
 
 // ─── Store Interface ─────────────────────────────────────────────
 
