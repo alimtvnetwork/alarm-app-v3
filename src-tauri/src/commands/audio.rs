@@ -3,10 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use std::sync::Arc;
-use tokio::sync::Mutex;
-
-use crate::audio::player::{self, AlarmPlayer};
+use crate::audio::player;
 use crate::errors::AlarmAppError;
 use crate::storage::models::{AlarmSound, SoundCategory};
 
