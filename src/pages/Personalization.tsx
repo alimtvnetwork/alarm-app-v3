@@ -101,7 +101,7 @@ const Personalization = () => {
             </p>
           </CardHeader>
           <CardContent className="space-y-2">
-            {[SKIN_OPTIONS.slice(0, 4), SKIN_OPTIONS.slice(4, 8), SKIN_OPTIONS.slice(8)].map((row, ri) => (
+            {[SKIN_OPTIONS.slice(0, 4), SKIN_OPTIONS.slice(4, 8), SKIN_OPTIONS.slice(8, 12)].map((row, ri) => (
               <div key={ri} className="flex gap-1">
                 {row.map(({ value, label, colors }) => {
                   const isActive = (settings.ThemeSkin ?? "default") === value;
