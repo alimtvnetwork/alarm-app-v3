@@ -201,8 +201,8 @@ const AlarmOverlay = () => {
             {alarm.ChallengeType === ChallengeType.Typing ? (
               <TypingChallenge onSolved={handleChallengeSolved} />
             ) : (
-              <MathChallenge
-                difficulty={suggestDifficulty(alarm.ChallengeDifficulty ?? ChallengeDifficulty.Easy)}
+              <AsyncMathChallenge
+                currentDifficulty={alarm.ChallengeDifficulty ?? ChallengeDifficulty.Easy}
                 onSolved={handleChallengeSolved}
               />
             )}
