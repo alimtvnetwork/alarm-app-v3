@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import { useErrorStore } from "./stores/error-store";
 import "./i18n";
 import "./index.css";
 
@@ -12,5 +13,22 @@ if (import.meta.env.DEV) {
     origWarn.apply(console, args);
   };
 }
+
+// ─── Global JS error listeners → error store ────────────────────
+
+window.onerror = (_message, source, lineno, colno, error) => {
+  useErrorStore.getState().captureException(
+    error ?? String(_message),
+    { source: `${source ?? "unknown"}:${lineno}:${colno}`, triggerAction: "window.onerror" },
+  );
+};
+
+window.onunhandledrejection = (event: PromiseRejectionEvent) => {
+  const error = event.reason instanceof Error ? event.reason : String(event.reason);
+  useErrorStore.getState().captureException(error, {
+    source: "unhandledrejection",
+    triggerAction: "Promise",
+  });
+};
 
 createRoot(document.getElementById("root")!).render(<App />);
