@@ -9,7 +9,7 @@ import { Plus } from "lucide-react";
 import AlarmList from "@/components/alarm/AlarmList";
 import AlarmForm from "@/components/alarm/AlarmForm";
 import AlarmDebugPanel from "@/components/alarm/AlarmDebugPanel";
-import AlarmTestButtons from "@/components/alarm/AlarmTestButtons";
+import AlarmDebugPanel from "@/components/alarm/AlarmDebugPanel";
 import { useAlarmStore } from "@/stores/alarm-store";
 import type { Alarm } from "@/types/alarm";
 

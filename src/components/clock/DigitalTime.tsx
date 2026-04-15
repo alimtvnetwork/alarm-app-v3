@@ -7,9 +7,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "@/stores/settings-store";
-import { useAlarmStore } from "@/stores/alarm-store";
 import { getTimeParts } from "@/lib/timezone-clock";
-import type { Alarm } from "@/types/alarm";
 
 interface AnimatedDigitProps {
   digit: string;
@@ -125,34 +123,5 @@ const DigitalTime = () => {
     </div>
   );
 };
-
-function getCountdown(
-  alarms: Alarm[],
-  t: (key: string, opts?: Record<string, unknown>) => string,
-): string | null {
-  const now = Date.now();
-  let minDiffMs = Infinity;
-
-  for (const alarm of alarms) {
-    if (!alarm.IsEnabled || !alarm.NextFireTime) continue;
-    const diff = new Date(alarm.NextFireTime).getTime() - now;
-    if (diff > 0 && diff < minDiffMs) minDiffMs = diff;
-  }
-
-  if (minDiffMs === Infinity) return null;
-
-  const MINUTE_MS = 60_000;
-  const MINUTES_PER_HOUR = 60;
-  const totalMin = Math.floor(minDiffMs / MINUTE_MS);
-  const hours = Math.floor(totalMin / MINUTES_PER_HOUR);
-  const mins = totalMin % MINUTES_PER_HOUR;
-
-  const timeParts: string[] = [];
-  if (hours > 0) timeParts.push(t("clock.hours", { count: hours }));
-  if (mins > 0) timeParts.push(t("clock.minutes", { count: mins }));
-  if (timeParts.length === 0) timeParts.push(t("clock.minutes", { count: 0 }));
-
-  return t("clock.alarmIn", { time: timeParts.join(` ${t("clock.and")} `) });
-}
 
 export default DigitalTime;
