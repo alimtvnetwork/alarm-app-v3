@@ -61,7 +61,7 @@ function ensureDom(): void {
 
 ensureDom();
 
-if (!("matchMedia" in window)) {
+if (typeof window.matchMedia !== "function") {
   Object.defineProperty(window, "matchMedia", {
     writable: true,
     value: (query: string) => ({
