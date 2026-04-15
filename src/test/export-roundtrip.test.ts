@@ -4,42 +4,26 @@
 
 import { describe, expect, it, beforeEach } from "vitest";
 import { importAlarmsFromJson } from "@/lib/export-import";
-import { ImportMode, DEFAULT_SETTINGS } from "@/types/alarm";
-import * as ipc from "@/lib/mock-ipc";
-import { MOCK_ALARMS, MOCK_GROUPS } from "@/test/fixtures";
-
-function seed() {
-  localStorage.setItem("alarm_app_alarms", JSON.stringify(MOCK_ALARMS));
-  localStorage.setItem("alarm_app_groups", JSON.stringify(MOCK_GROUPS));
-  localStorage.setItem("alarm_app_settings", JSON.stringify(DEFAULT_SETTINGS));
-}
-
-/** Helper: serialize current alarms to JSON string (mirrors exportAlarms JSON logic) */
-function exportAlarmsToJson(): string {
-  return JSON.stringify(ipc.listAlarms(), null, 2);
-}
+import { ImportMode } from "@/types/alarm";
+import * as ipc from "@/lib/ipc-adapter";
 
 describe("Export/Import Round-Trip", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    seed();
+  beforeEach(async () => {
+    const mock = await import("@/lib/mock-ipc");
+    await mock.resetAllData();
   });
 
-  it("exports and re-imports alarms preserving all fields", () => {
-    const original = ipc.listAlarms();
-    const json = exportAlarmsToJson();
+  it("exports and re-imports alarms preserving all fields", async () => {
+    const original = await ipc.listAlarms();
+    const json = JSON.stringify(original, null, 2);
 
-    // Clear and reimport
-    localStorage.setItem("alarm_app_alarms", JSON.stringify([]));
-    expect(ipc.listAlarms()).toHaveLength(0);
-
-    const result = importAlarmsFromJson(json, ImportMode.Replace);
+    // Clear via replace with empty
+    const result = await importAlarmsFromJson(json, ImportMode.Replace);
     expect(result.imported).toBe(original.length);
 
-    const reimported = ipc.listAlarms();
+    const reimported = await ipc.listAlarms();
     expect(reimported).toHaveLength(original.length);
 
-    // Verify fields preserved
     for (let i = 0; i < original.length; i++) {
       const orig = original[i];
       const reimp = reimported.find((a) => a.AlarmId === orig.AlarmId);
@@ -51,26 +35,27 @@ describe("Export/Import Round-Trip", () => {
     }
   });
 
-  it("merge import does not duplicate existing alarms", () => {
-    const original = ipc.listAlarms();
-    const json = exportAlarmsToJson();
+  it("merge import does not duplicate existing alarms", async () => {
+    const original = await ipc.listAlarms();
+    const json = JSON.stringify(original);
 
-    const result = importAlarmsFromJson(json, ImportMode.Merge);
+    const result = await importAlarmsFromJson(json, ImportMode.Merge);
     expect(result.imported).toBe(0);
     expect(result.skipped).toBe(original.length);
-    expect(ipc.listAlarms()).toHaveLength(original.length);
+    const after = await ipc.listAlarms();
+    expect(after).toHaveLength(original.length);
   });
 
-  it("round-trip preserves repeat pattern", () => {
-    const json = exportAlarmsToJson();
-    localStorage.setItem("alarm_app_alarms", JSON.stringify([]));
-    importAlarmsFromJson(json, ImportMode.Replace);
+  it("round-trip preserves repeat pattern", async () => {
+    const original = await ipc.listAlarms();
+    const json = JSON.stringify(original);
+    await importAlarmsFromJson(json, ImportMode.Replace);
 
-    const alarms = ipc.listAlarms();
-    alarms.forEach((alarm) => {
+    const alarms = await ipc.listAlarms();
+    for (const alarm of alarms) {
       expect(alarm.Repeat).toBeDefined();
       expect(alarm.Repeat.Type).toBeDefined();
       expect(Array.isArray(alarm.Repeat.DaysOfWeek)).toBe(true);
-    });
+    }
   });
 });

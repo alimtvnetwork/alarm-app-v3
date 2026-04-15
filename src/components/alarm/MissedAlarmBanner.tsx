@@ -13,8 +13,7 @@ const MissedAlarmBanner = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
-    const result = detectMissedAlarms();
-    setMissed(result);
+    detectMissedAlarms().then(setMissed);
   }, []);
 
   if (dismissed || missed.length === 0) return null;

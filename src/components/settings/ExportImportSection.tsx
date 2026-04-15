@@ -50,8 +50,8 @@ const ExportImportSection = () => {
     doExport();
   };
 
-  const doExport = () => {
-    exportAlarms(exportFormat);
+  const doExport = async () => {
+    await exportAlarms(exportFormat);
     toast.success(t("export.exportBtn") + " ✓");
   };
 
@@ -70,10 +70,10 @@ const ExportImportSection = () => {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onload = (event) => {
+    reader.onload = async (event) => {
       try {
         const json = event.target?.result as string;
-        const result = importAlarmsFromJson(json, importMode);
+        const result = await importAlarmsFromJson(json, importMode);
         loadAlarms();
         toast.success(
           `${t("export.importBtn")}: ${result.imported} imported, ${result.skipped} skipped`

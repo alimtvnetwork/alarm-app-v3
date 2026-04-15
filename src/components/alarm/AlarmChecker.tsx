@@ -4,7 +4,7 @@
  */
 
 import { useEffect, useRef } from "react";
-import * as ipc from "@/lib/mock-ipc";
+import * as ipc from "@/lib/ipc-adapter";
 import { useOverlayStore } from "@/stores/overlay-store";
 import { useAlarmStore } from "@/stores/alarm-store";
 import { detectMissedAlarms } from "@/lib/missed-alarm-detector";
@@ -22,21 +22,22 @@ const AlarmChecker = () => {
 
   // Cold-start: detect missed alarms
   useEffect(() => {
-    const missed = detectMissedAlarms();
-    if (missed.length > 0) {
-      toast.warning(`${missed.length} alarm(s) missed while you were away`, {
-        description: missed.map((m) => `${m.alarm.Label || m.alarm.Time}`).join(", "),
-        duration: 8000,
-      });
-    }
+    detectMissedAlarms().then((missed) => {
+      if (missed.length > 0) {
+        toast.warning(`${missed.length} alarm(s) missed while you were away`, {
+          description: missed.map((m) => `${m.alarm.Label || m.alarm.Time}`).join(", "),
+          duration: 8000,
+        });
+      }
+    });
   }, []);
 
   // Polling loop
   useEffect(() => {
-    const check = () => {
-      if (isVisible) return; // don't interrupt a firing alarm
+    const check = async () => {
+      if (isVisible) return;
 
-      const alarms = ipc.listAlarms();
+      const alarms = await ipc.listAlarms();
       const now = new Date();
 
       for (const alarm of alarms) {
@@ -49,28 +50,23 @@ const AlarmChecker = () => {
           fireAlarm(alarm);
           fireAlarmNotification(alarm.Label, alarm.Time);
 
-          // Advance NextFireTime for repeating alarms
           const updated = { ...alarm };
-          updated.NextFireTime = computeNextFireTime(
-            updated,
-            ipc.getSettings().SystemTimezone,
-          );
+          const settings = await ipc.getSettings();
+          updated.NextFireTime = computeNextFireTime(updated, settings.SystemTimezone);
           if (!updated.NextFireTime) {
             updated.IsEnabled = false;
           }
-          ipc.updateAlarm(updated);
+          await ipc.updateAlarm(updated);
           refreshAlarms();
-          break; // fire one at a time
+          break;
         }
       }
     };
 
-    // Check immediately on mount
     check();
 
     const id = setInterval(check, POLL_INTERVAL_MS);
 
-    // Re-check immediately when tab becomes visible again (background wake)
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") {
         check();
@@ -84,10 +80,8 @@ const AlarmChecker = () => {
     };
   }, [fireAlarm, isVisible, refreshAlarms]);
 
-  // Clear fired tracking when overlay closes (alarm was handled)
   useEffect(() => {
     if (!isVisible) {
-      // Allow re-firing after a short delay (for repeating alarms)
       const timeout = setTimeout(() => {
         firedIdsRef.current.clear();
       }, 5000);

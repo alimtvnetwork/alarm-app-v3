@@ -4,16 +4,16 @@
  */
 
 import { ChallengeDifficulty, AlarmEventType } from "@/types/alarm";
-import * as ipc from "@/lib/mock-ipc";
+import * as ipc from "@/lib/ipc-adapter";
 
 const FAST_THRESHOLD_SEC = 5;
 const SLOW_THRESHOLD_SEC = 15;
 const MIN_SAMPLES = 3;
 
-export function suggestDifficulty(
+export async function suggestDifficulty(
   currentDifficulty: ChallengeDifficulty
-): ChallengeDifficulty {
-  const events = ipc.listAlarmEvents();
+): Promise<ChallengeDifficulty> {
+  const events = await ipc.listAlarmEvents();
   const challengeEvents = events.filter(
     (e) =>
       e.Type === AlarmEventType.Dismissed &&

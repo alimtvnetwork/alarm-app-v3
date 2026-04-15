@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import * as ipc from "@/lib/mock-ipc";
+import * as ipc from "@/lib/ipc-adapter";
 import { useDerivedAnalytics } from "@/hooks/useDerivedAnalytics";
 import StatCard from "@/components/analytics/StatCard";
 import HistoryChart from "@/components/analytics/HistoryChart";
@@ -18,8 +18,8 @@ import BreakdownChart from "@/components/analytics/BreakdownChart";
 
 const CSV_HEADERS = ["AlarmId", "Type", "FiredAt", "SnoozeCount", "ChallengeSolveTimeSec"];
 
-function buildCsvContent(): string | null {
-  const events = ipc.listAlarmEvents();
+async function buildCsvContent(): Promise<string | null> {
+  const events = await ipc.listAlarmEvents();
   if (events.length === 0) return null;
   const rows = events.map((e) =>
     [e.AlarmId, e.Type, e.FiredAt, e.SnoozeCount, e.ChallengeSolveTimeSec ?? ""].join(",")
@@ -44,8 +44,8 @@ const Analytics = () => {
   const { dailyData, snoozeTrend, totalFired, totalSnoozed, avgSolveTime, streak, pieData } =
     useDerivedAnalytics();
 
-  const exportCsv = useCallback(() => {
-    const csv = buildCsvContent();
+  const exportCsv = useCallback(async () => {
+    const csv = await buildCsvContent();
     if (csv) downloadCsv(csv);
   }, []);
 

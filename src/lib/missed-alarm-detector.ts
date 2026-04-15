@@ -5,7 +5,7 @@
 
 import type { Alarm, AlarmEvent } from "@/types/alarm";
 import { AlarmEventType } from "@/types/alarm";
-import * as ipc from "@/lib/mock-ipc";
+import * as ipc from "@/lib/ipc-adapter";
 
 const LAST_CHECK_KEY = "alarm_app_last_check";
 
@@ -24,10 +24,10 @@ export interface MissedAlarm {
   missedAt: string;
 }
 
-export function detectMissedAlarms(): MissedAlarm[] {
+export async function detectMissedAlarms(): Promise<MissedAlarm[]> {
   const lastCheck = getLastCheckTime();
   const now = new Date();
-  const alarms = ipc.listAlarms();
+  const alarms = await ipc.listAlarms();
   const missed: MissedAlarm[] = [];
 
   for (const alarm of alarms) {
@@ -36,7 +36,7 @@ export function detectMissedAlarms(): MissedAlarm[] {
     const fireTime = new Date(alarm.NextFireTime);
     if (fireTime > lastCheck && fireTime <= now) {
       missed.push({ alarm, missedAt: fireTime.toISOString() });
-      logMissedEvent(alarm, fireTime.toISOString());
+      await logMissedEvent(alarm, fireTime.toISOString());
     }
   }
 
@@ -44,7 +44,7 @@ export function detectMissedAlarms(): MissedAlarm[] {
   return missed;
 }
 
-function logMissedEvent(alarm: Alarm, firedAt: string): void {
+async function logMissedEvent(alarm: Alarm, firedAt: string): Promise<void> {
   const event: AlarmEvent = {
     AlarmEventId: crypto.randomUUID(),
     AlarmId: alarm.AlarmId,
@@ -60,5 +60,5 @@ function logMissedEvent(alarm: Alarm, firedAt: string): void {
     AlarmTimeSnapshot: alarm.Time,
     Timestamp: new Date().toISOString(),
   };
-  ipc.createAlarmEvent(event);
+  await ipc.createAlarmEvent(event);
 }
