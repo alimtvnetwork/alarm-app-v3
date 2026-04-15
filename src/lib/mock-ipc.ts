@@ -9,6 +9,7 @@ import type { Alarm, AlarmGroup, AlarmEvent, AlarmSound, Settings, SnoozeState }
 import { DEFAULT_SETTINGS } from "@/types/alarm";
 import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 import { getDB } from "@/lib/indexed-db";
+import { runTransaction } from "@/lib/db-transactions";
 import { MOCK_SOUNDS } from "@/test/fixtures";
 
 // ─── Settings Helpers ────────────────────────────────────────────
@@ -75,29 +76,29 @@ async function seedIfEmpty(): Promise<void> {
   // Seed settings if empty
   const existingSettings = await db.getAll("Settings");
   if (existingSettings.length === 0) {
-    const rows = settingsObjToRows(DEFAULT_SETTINGS);
-    const tx = db.transaction("Settings", "readwrite");
-    for (const row of rows) {
-      await tx.store.put(row);
-    }
-    await tx.done;
+    await runTransaction(["Settings"], async (tx) => {
+      const rows = settingsObjToRows(DEFAULT_SETTINGS);
+      for (const row of rows) {
+        await tx.objectStore("Settings").put(row);
+      }
+    });
   }
 
   // Seed sample data if no alarms exist
   const existingAlarms = await db.getAll("Alarms");
   if (existingAlarms.length === 0) {
     const { MOCK_ALARMS, MOCK_GROUPS, MOCK_EVENTS } = await import("@/test/fixtures");
-    const tx = db.transaction(["Alarms", "AlarmGroups", "AlarmEvents"], "readwrite");
-    for (const alarm of MOCK_ALARMS) {
-      await tx.objectStore("Alarms").put(alarm as unknown as Record<string, unknown>);
-    }
-    for (const group of MOCK_GROUPS) {
-      await tx.objectStore("AlarmGroups").put(group as unknown as Record<string, unknown>);
-    }
-    for (const event of MOCK_EVENTS) {
-      await tx.objectStore("AlarmEvents").put(event as unknown as Record<string, unknown>);
-    }
-    await tx.done;
+    await runTransaction(["Alarms", "AlarmGroups", "AlarmEvents"], async (tx) => {
+      for (const alarm of MOCK_ALARMS) {
+        await tx.objectStore("Alarms").put(alarm as unknown as Record<string, unknown>);
+      }
+      for (const group of MOCK_GROUPS) {
+        await tx.objectStore("AlarmGroups").put(group as unknown as Record<string, unknown>);
+      }
+      for (const event of MOCK_EVENTS) {
+        await tx.objectStore("AlarmEvents").put(event as unknown as Record<string, unknown>);
+      }
+    });
   }
 }
 
@@ -187,15 +188,15 @@ export async function toggleAlarm(alarmId: string, isEnabled: boolean): Promise<
 
 export async function reorderAlarms(alarmIds: string[]): Promise<void> {
   await ensureInitialized();
-  const db = await getDB();
-  const tx = db.transaction("Alarms", "readwrite");
-  for (let i = 0; i < alarmIds.length; i++) {
-    const alarm = await tx.store.get(alarmIds[i]);
-    if (alarm) {
-      await tx.store.put({ ...alarm, Position: i });
+  await runTransaction(["Alarms"], async (tx) => {
+    const store = tx.objectStore("Alarms");
+    for (let i = 0; i < alarmIds.length; i++) {
+      const alarm = await store.get(alarmIds[i]);
+      if (alarm) {
+        await store.put({ ...alarm, Position: i });
+      }
     }
-  }
-  await tx.done;
+  });
 }
 
 // ─── Group Commands ──────────────────────────────────────────────
@@ -222,21 +223,19 @@ export async function updateGroup(group: AlarmGroup): Promise<AlarmGroup> {
 
 export async function deleteGroup(groupId: string): Promise<void> {
   await ensureInitialized();
-  const db = await getDB();
-  await db.delete("AlarmGroups", groupId);
-  // Unassign alarms from deleted group
-  const tx = db.transaction("Alarms", "readwrite");
-  const allAlarms = await tx.store.getAll();
-  for (const alarm of allAlarms) {
-    if ((alarm as unknown as Alarm).GroupId === groupId) {
-      await tx.store.put({
-        ...alarm,
-        GroupId: null,
-        UpdatedAt: new Date().toISOString(),
-      });
+  await runTransaction(["AlarmGroups", "Alarms"], async (tx) => {
+    await tx.objectStore("AlarmGroups").delete(groupId);
+    const allAlarms = await tx.objectStore("Alarms").getAll();
+    for (const alarm of allAlarms) {
+      if ((alarm as unknown as Alarm).GroupId === groupId) {
+        await tx.objectStore("Alarms").put({
+          ...alarm,
+          GroupId: null,
+          UpdatedAt: new Date().toISOString(),
+        });
+      }
     }
-  }
-  await tx.done;
+  });
 }
 
 // ─── Settings Commands ───────────────────────────────────────────
@@ -257,13 +256,12 @@ export async function updateSettings(partial: Partial<Settings>): Promise<Settin
   const current = await getSettings();
   const updated = { ...current, ...partial };
   updated.SystemTimezone = normalizeAlarmTimezone(updated.SystemTimezone);
-  const db = await getDB();
   const rows = settingsObjToRows(updated);
-  const tx = db.transaction("Settings", "readwrite");
-  for (const row of rows) {
-    await tx.store.put(row);
-  }
-  await tx.done;
+  await runTransaction(["Settings"], async (tx) => {
+    for (const row of rows) {
+      await tx.objectStore("Settings").put(row);
+    }
+  });
   return updated;
 }
 
