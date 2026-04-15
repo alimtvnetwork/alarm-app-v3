@@ -3,9 +3,10 @@
  * totals, avg solve time, streak, and pie breakdown from alarm events.
  */
 
-import { useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
+import type { AlarmEvent } from "@/types/alarm";
 import { AlarmEventType } from "@/types/alarm";
-import * as ipc from "@/lib/mock-ipc";
+import * as ipc from "@/lib/ipc-adapter";
 
 const MAX_STREAK_DAYS = 365;
 
@@ -19,13 +20,13 @@ export interface DerivedAnalytics {
   pieData: { name: string; value: number }[];
 }
 
-function computeAvgSolveTime(events: ReturnType<typeof ipc.listAlarmEvents>): number {
+function computeAvgSolveTime(events: AlarmEvent[]): number {
   const solved = events.filter((e) => e.ChallengeSolveTimeSec !== null);
   if (solved.length === 0) return 0;
   return solved.reduce((sum, e) => sum + (e.ChallengeSolveTimeSec ?? 0), 0) / solved.length;
 }
 
-function computeStreak(events: ReturnType<typeof ipc.listAlarmEvents>): number {
+function computeStreak(events: AlarmEvent[]): number {
   const dismissDates = new Set(
     events
       .filter((e) => e.Type === AlarmEventType.Fired || e.Type === AlarmEventType.Dismissed)
@@ -44,10 +45,26 @@ function computeStreak(events: ReturnType<typeof ipc.listAlarmEvents>): number {
   return streak;
 }
 
+const EMPTY: DerivedAnalytics = {
+  dailyData: [],
+  snoozeTrend: [],
+  totalFired: 0,
+  totalSnoozed: 0,
+  avgSolveTime: 0,
+  streak: 0,
+  pieData: [],
+};
+
 export function useDerivedAnalytics(): DerivedAnalytics {
-  const events = ipc.listAlarmEvents();
+  const [events, setEvents] = useState<AlarmEvent[]>([]);
+
+  useEffect(() => {
+    ipc.listAlarmEvents().then(setEvents);
+  }, []);
 
   return useMemo(() => {
+    if (events.length === 0) return EMPTY;
+
     const byDate = new Map<string, { fired: number; snoozed: number; dismissed: number; missed: number }>();
     events.forEach((e) => {
       const date = e.FiredAt.split("T")[0];

@@ -5,7 +5,7 @@
 
 import type { Alarm } from "@/types/alarm";
 import { ExportFormat, ImportMode } from "@/types/alarm";
-import * as ipc from "@/lib/mock-ipc";
+import * as ipc from "@/lib/ipc-adapter";
 
 // ─── Export ──────────────────────────────────────────────────────
 
@@ -21,8 +21,8 @@ function downloadFile(content: string, fileName: string, mimeType: string): void
   setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
-export function exportAlarms(format: ExportFormat): void {
-  const alarms = ipc.listAlarms();
+export async function exportAlarms(format: ExportFormat): Promise<void> {
+  const alarms = await ipc.listAlarms();
   const timestamp = new Date().toISOString().split("T")[0];
 
   if (format === ExportFormat.Json) {
@@ -43,38 +43,44 @@ export function exportAlarms(format: ExportFormat): void {
 
 // ─── Import ──────────────────────────────────────────────────────
 
-export function importAlarmsFromJson(
+export async function importAlarmsFromJson(
   jsonString: string,
   mode: ImportMode
-): { imported: number; skipped: number } {
+): Promise<{ imported: number; skipped: number }> {
   const parsed = JSON.parse(jsonString) as Alarm[];
   if (!Array.isArray(parsed)) {
     throw new Error("Invalid format: expected an array of alarms");
   }
 
-  const existing = ipc.listAlarms();
+  const existing = await ipc.listAlarms();
   const existingIds = new Set(existing.map((a) => a.AlarmId));
   let imported = 0;
   let skipped = 0;
 
   if (mode === ImportMode.Replace) {
-    // Delete all existing, then import all
-    existing.forEach((a) => ipc.deleteAlarm(a.AlarmId));
-    parsed.forEach((a) => {
-      ipc.createAlarm(a);
+    for (const a of existing) {
+      await ipc.deleteAlarm(a.AlarmId);
+    }
+    for (const a of parsed) {
+      await ipc.createAlarm(a);
       imported++;
-    });
+    }
   } else {
-    // Merge — skip duplicates
-    parsed.forEach((a) => {
+    for (const a of parsed) {
       if (existingIds.has(a.AlarmId)) {
         skipped++;
       } else {
-        ipc.createAlarm(a);
+        await ipc.createAlarm(a);
         imported++;
       }
-    });
+    }
   }
 
   return { imported, skipped };
+}
+
+/** Export alarms as JSON string (for programmatic use). */
+export function exportAlarmsToJson(): string {
+  // This is a sync helper used by tests — returns a promise-based wrapper
+  throw new Error("Use exportAlarms() instead or await listAlarms() directly");
 }

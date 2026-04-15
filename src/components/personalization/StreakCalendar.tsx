@@ -3,35 +3,31 @@
  * Navigation arrows, day grid, today highlight, dismissal dot indicators.
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { AlarmEventType } from "@/types/alarm";
+import * as ipc from "@/lib/ipc-adapter";
 
 const WEEK_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-
-const loadDismissHistory = (): Record<string, number> => {
-  try {
-    const raw = localStorage.getItem("alarm_events");
-    if (!raw) return {};
-    const events = JSON.parse(raw) as Array<{ EventType: string; FiredAt: string }>;
-    const counts: Record<string, number> = {};
-    for (const ev of events) {
-      if (ev.EventType === AlarmEventType.Dismissed) {
-        const day = ev.FiredAt.slice(0, 10);
-        counts[day] = (counts[day] ?? 0) + 1;
-      }
-    }
-    return counts;
-  } catch {
-    return {};
-  }
-};
 
 const StreakCalendar = () => {
   const [viewDate, setViewDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
-  const history = useMemo(loadDismissHistory, []);
+  const [history, setHistory] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    ipc.listAlarmEvents().then((events) => {
+      const counts: Record<string, number> = {};
+      for (const ev of events) {
+        if (ev.Type === AlarmEventType.Dismissed) {
+          const day = ev.FiredAt.slice(0, 10);
+          counts[day] = (counts[day] ?? 0) + 1;
+        }
+      }
+      setHistory(counts);
+    });
+  }, []);
 
   const today = new Date();
   const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
@@ -48,32 +44,33 @@ const StreakCalendar = () => {
   const goToPrevMonth = () => setViewDate(new Date(year, month - 1, 1));
   const goToNextMonth = () => setViewDate(new Date(year, month + 1, 1));
 
-  const cells: Array<{ day: number; key: string; isCurrentMonth: boolean; isToday: boolean; hasDismissal: boolean }> = [];
-
   const toLocalKey = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-  // Previous month trailing days
-  for (let i = firstDay - 1; i >= 0; i--) {
-    const d = prevMonthDays - i;
-    const key = toLocalKey(new Date(year, month - 1, d));
-    cells.push({ day: d, key, isCurrentMonth: false, isToday: false, hasDismissal: (history[key] ?? 0) > 0 });
-  }
+  const cells = useMemo(() => {
+    const result: Array<{ day: number; key: string; isCurrentMonth: boolean; isToday: boolean; hasDismissal: boolean }> = [];
 
-  // Current month days
-  for (let d = 1; d <= daysInMonth; d++) {
-    const key = toLocalKey(new Date(year, month, d));
-    cells.push({ day: d, key, isCurrentMonth: true, isToday: key === todayStr, hasDismissal: (history[key] ?? 0) > 0 });
-  }
-
-  // Next month leading days
-  const remaining = 7 - (cells.length % 7);
-  if (remaining < 7) {
-    for (let d = 1; d <= remaining; d++) {
-      const key = toLocalKey(new Date(year, month + 1, d));
-      cells.push({ day: d, key, isCurrentMonth: false, isToday: false, hasDismissal: (history[key] ?? 0) > 0 });
+    for (let i = firstDay - 1; i >= 0; i--) {
+      const d = prevMonthDays - i;
+      const key = toLocalKey(new Date(year, month - 1, d));
+      result.push({ day: d, key, isCurrentMonth: false, isToday: false, hasDismissal: (history[key] ?? 0) > 0 });
     }
-  }
+
+    for (let d = 1; d <= daysInMonth; d++) {
+      const key = toLocalKey(new Date(year, month, d));
+      result.push({ day: d, key, isCurrentMonth: true, isToday: key === todayStr, hasDismissal: (history[key] ?? 0) > 0 });
+    }
+
+    const remaining = 7 - (result.length % 7);
+    if (remaining < 7) {
+      for (let d = 1; d <= remaining; d++) {
+        const key = toLocalKey(new Date(year, month + 1, d));
+        result.push({ day: d, key, isCurrentMonth: false, isToday: false, hasDismissal: (history[key] ?? 0) > 0 });
+      }
+    }
+
+    return result;
+  }, [year, month, history, todayStr, firstDay, daysInMonth, prevMonthDays]);
 
   const selectedLabel = selectedDate
     ? new Date(selectedDate + "T12:00:00").toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })
@@ -84,7 +81,6 @@ const StreakCalendar = () => {
   return (
     <Card>
       <CardContent className="p-4">
-        {/* Month navigation */}
         <div className="flex items-center justify-between mb-4">
           <button
             onClick={goToPrevMonth}
@@ -101,7 +97,6 @@ const StreakCalendar = () => {
           </button>
         </div>
 
-        {/* Weekday headers */}
         <div className="grid grid-cols-7 gap-0 mb-1">
           {WEEK_LABELS.map((label) => (
             <span key={label} className="text-center text-[11px] font-body font-medium text-muted-foreground py-1">
@@ -110,7 +105,6 @@ const StreakCalendar = () => {
           ))}
         </div>
 
-        {/* Day grid */}
         <div className="grid grid-cols-7 gap-1">
           {cells.map((cell) => {
             const isSelected = cell.key === selectedDate;
@@ -134,7 +128,6 @@ const StreakCalendar = () => {
           })}
         </div>
 
-        {/* Selected date detail */}
         {selectedLabel && (
           <div className="mt-4 pt-3 border-t border-border">
             <p className="text-sm font-heading font-semibold text-foreground">{selectedLabel}</p>
