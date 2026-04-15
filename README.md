@@ -8,18 +8,187 @@ Built with **React 18 · TypeScript · Vite 5 · Tailwind CSS · Zustand · shad
 
 ## Quick Start
 
-### Install & Run
+### Install
+
+```powershell
+# Windows (PowerShell)
+.\run.ps1 -i
+```
 
 ```bash
-git clone https://github.com/ab-mahin/alarm-app.git
-cd alarm-app
-npm install
-npm run dev
+# Linux / macOS
+./run.sh -i
+```
+
+### Build and run
+
+```powershell
+# Windows (PowerShell)
+.\run.ps1
+```
+
+```bash
+# Linux / macOS
+./run.sh
 ```
 
 The app will open at **http://localhost:8080**.
 
-### Available Scripts
+---
+
+## Build & Run Scripts
+
+Cross-platform build scripts with auto-install, force-clean, Tauri desktop builds, and configuration via `powershell.json`.
+
+### Usage
+
+**Windows (PowerShell):**
+
+```powershell
+.\run.ps1 [flags]
+```
+
+**Linux / macOS (Bash):**
+
+```bash
+./run.sh [flags]
+```
+
+### Flags
+
+**Windows (PowerShell):**
+
+| Flag | Description | Example |
+|------|-------------|---------|
+| `-h` | Show help | `.\run.ps1 -h` |
+| `-i` | Install/update all dependencies | `.\run.ps1 -i` |
+| `-b` | Build only (production), don't start dev server | `.\run.ps1 -b` |
+| `-s` | Skip build, just start dev server | `.\run.ps1 -s` |
+| `-f` | Force clean (remove node_modules, dist, caches) | `.\run.ps1 -f` |
+| `-r` | Clean reinstall + build (`-f` + `-i`) | `.\run.ps1 -r` |
+| `-p` | Skip git pull | `.\run.ps1 -p` |
+| `-t` | Build Tauri desktop app | `.\run.ps1 -t` |
+| `-td` | Run Tauri dev mode (hot-reload) | `.\run.ps1 -td` |
+| `-v` | Verbose debug output | `.\run.ps1 -v` |
+
+**Linux / macOS (Bash):**
+
+| Flag | Description | Example |
+|------|-------------|---------|
+| `-h` | Show help | `./run.sh -h` |
+| `-i` | Install/update all dependencies | `./run.sh -i` |
+| `-b` | Build only (production), don't start dev server | `./run.sh -b` |
+| `-s` | Skip build, just start dev server | `./run.sh -s` |
+| `-f` | Force clean (remove node_modules, dist, caches) | `./run.sh -f` |
+| `-r` | Clean reinstall + build (`-f` + `-i`) | `./run.sh -r` |
+| `-p` | Skip git pull | `./run.sh -p` |
+| `-t` | Build Tauri desktop app | `./run.sh -t` |
+| `-d` | Run Tauri dev mode (hot-reload) | `./run.sh -d` |
+| `-v` | Verbose debug output | `./run.sh -v` |
+
+### Examples
+
+**Fresh setup (first time):**
+
+```powershell
+.\run.ps1 -i           # Install everything, then exit
+.\run.ps1              # Build + start dev server
+```
+
+**Force clean rebuild:**
+
+```powershell
+.\run.ps1 -r           # Remove node_modules/dist, reinstall, build
+```
+
+**Production build only:**
+
+```powershell
+.\run.ps1 -b           # Build to dist/, don't start server
+```
+
+**Tauri desktop app:**
+
+```powershell
+.\run.ps1 -t           # Build native desktop app
+.\run.ps1 -td          # Hot-reload Tauri dev mode
+```
+
+### What the scripts do
+
+The build scripts run a 5-step pipeline:
+
+| Step | Action |
+|------|--------|
+| 1 | **Git pull** — pulls latest changes (skip with `-p`) |
+| 2 | **Prerequisites** — checks/auto-installs Node.js, Rust, Tauri CLI |
+| 3 | **Build** — runs `npm run build` (or Tauri build with `-t`) |
+| 4 | **Config** — copies `.env.example` → `.env` if missing |
+| 5 | **Dev server** — starts `npm run dev` on port 8080 |
+
+### Configuration
+
+All settings are driven by `powershell.json` — no need to edit the scripts:
+
+```json
+{
+  "projectName": "Alarm App",
+  "frontendDir": ".",
+  "buildCommand": "npm run build",
+  "runCommand": "npm run dev",
+  "ports": [8080],
+  "cleanPaths": ["node_modules", "dist", ".vite"],
+  "prerequisites": {
+    "node": true,
+    "rust": false,
+    "tauri": false
+  }
+}
+```
+
+### Auto-Install
+
+The scripts automatically install missing prerequisites:
+
+| Tool | Windows | macOS | Linux |
+|------|---------|-------|-------|
+| Node.js | `winget` | `brew` | Manual |
+| Rust | `winget` → `rustup` | `rustup` | `rustup` |
+| Tauri CLI | `npm install -D @tauri-apps/cli` | Same | Same |
+| Xcode CLT | — | `xcode-select --install` | — |
+| System libs | — | — | `apt install` (webkit, etc.) |
+
+---
+
+## Installer Scripts
+
+Pre-built installer scripts for distributing release binaries. Located in `scripts/`.
+
+### One-Liner Install
+
+**Windows (PowerShell):**
+
+```powershell
+irm https://github.com/alimtvnetwork/alarm-app/releases/latest/download/install.ps1 | iex
+```
+
+**Linux / macOS (Bash):**
+
+```bash
+curl -fsSL https://github.com/alimtvnetwork/alarm-app/releases/latest/download/install.sh | bash
+```
+
+### What the installers do
+
+1. Detect platform and architecture (x64 / arm64)
+2. Download the correct release asset (`.msi`, `.dmg`, or `.AppImage`)
+3. Verify SHA-256 checksum
+4. Install to the default location
+5. Clean up temporary files
+
+---
+
+## Available Scripts
 
 | Command | Description |
 |---------|-------------|
