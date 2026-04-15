@@ -1,6 +1,6 @@
 ---
 name: Alarm App Spec
-description: Cross-platform native alarm app (Tauri 2.x) — 17 feature specs, 13 fundamentals, 579 spec issues (577 resolved, 2 accepted), P0-P3 priority matrix, 97-98% AI success rate
+description: Cross-platform native alarm app (Tauri 2.x) — fully scaffolded Rust backend with SQLite, alarm engine, wake listener, system tray, all IPC commands implemented
 type: feature
 ---
 
@@ -8,24 +8,51 @@ type: feature
 
 - **Spec version:** v3.1.0
 - **Readiness score:** 100/100 (A+)
-- **AI success rate:** 95–97% full-stack, 98%+ backend
 - **Total spec issues:** 579 found, 577 resolved, 2 accepted
-- **Open issues:** 0 blocking
-- **Spec files:** 63+ (13 fundamentals + 17 features + 31 issue trackers + 3 execution guides + 10 misc)
-- **Gap analysis phases:** 12 (Phases 6–7, 11–19)
 
 ## Architecture
 
 - **Framework:** Tauri 2.x (Rust backend + WebView frontend)
 - **Frontend:** React 18 + Vite 5 + TypeScript 5 + Tailwind CSS 3 + shadcn/ui + Zustand 4
-- **Backend:** Rust (alarm engine, audio, notifications, storage)
-- **Database:** Single SQLite file (rusqlite + refinery migrations, WAL mode)
-- **Tables:** Alarms, AlarmGroups, Settings, SnoozeState, AlarmEvents, Quotes, Webhooks (all PascalCase)
-- **Domain enums:** 13 TypeScript + Rust enums
-- **Error enums:** AlarmAppError (13 variants) + WebhookError (7 variants)
-- **State management:** Zustand — useAlarmStore, useOverlayStore, useSettingsStore (all typed)
-- **Settings:** 17 keys in key-value table, mapped to typed SettingsResponse struct
-- **Acceptance criteria:** 229 total (157 feature + 72 fundamental)
+- **Backend:** Rust (alarm engine, audio, notifications, storage) — FULLY IMPLEMENTED
+- **Database:** SQLite (rusqlite + refinery migrations, WAL mode) — 3 migrations, 7 tables
+- **IPC:** ipc-adapter.ts dual-path (mock-ipc for web, tauri-commands for native)
+
+## Backend Implementation Status (src-tauri/)
+
+### Complete ✅
+- `main.rs` — Full 10-step startup sequence (DB, migrations, WAL, settings, logging, audio, engine, wake listener, tray, timezone watcher)
+- `storage/db.rs` — SQLite connection, migrations, settings CRUD, event purge
+- `storage/models.rs` — All Rust structs (AlarmRow, AlarmGroupRow, SnoozeStateRow, etc.)
+- `commands/alarm.rs` — Full CRUD (list, create, update, delete, toggle, duplicate, undo, reorder)
+- `commands/group.rs` — Group CRUD + cascade delete + toggle
+- `commands/settings.rs` — get_settings, update_setting
+- `commands/snooze.rs` — snooze, get_state, cancel, dismiss
+- `commands/history.rs` — list_alarm_events, clear_history
+- `commands/audio.rs` — list_sounds, set_custom, validate
+- `commands/challenge.rs` — generate + verify challenges
+- `commands/wellness.rs` — bedtime calc, sleep quality, bedtime check
+- `commands/personalization.rs` — quotes CRUD, streak data
+- `commands/export_import.rs` — export/import alarms
+- `engine/alarm_engine.rs` — Background alarm scheduler (30s polling)
+- `engine/scheduler.rs` — Next-fire-time calculation
+- `engine/wake_listener/` — Platform-specific sleep/wake detection (macOS, Windows, Linux)
+- `engine/timezone_watcher.rs` — Timezone change detection
+- `tray/` — System tray setup
+- `errors.rs` — AlarmAppError enum
+- `migrations/V1__initial_schema.sql` — All 7 tables + indexes + settings seed
+- `migrations/V2__seed_quotes.sql`, `V3__alarm_position.sql`
+- `Cargo.toml` — All dependencies pinned
+- `tauri.conf.json` — App config
+- `capabilities/default.json` — All plugin permissions
+
+### Remaining for Production
+- Minor config tweaks (withGlobalTauri: true, devUrl port alignment)
+- `@tauri-apps/api` npm dependency
+- Rust compilation testing (`cargo tauri dev`)
+- Platform-specific testing (notifications, audio, tray)
+- App packaging (.dmg, .msi, .AppImage)
+- Auto-updater endpoint configuration
 
 ## Canonical Location
 
