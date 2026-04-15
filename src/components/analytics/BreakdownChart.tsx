@@ -1,16 +1,19 @@
 /**
- * BreakdownChart — Donut pie chart of event type breakdown.
+ * BreakdownChart — Radial bar chart showing event type percentages.
  */
 
 import {
-  PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer,
+  RadialBarChart, RadialBar, ResponsiveContainer,
 } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTranslation } from "react-i18next";
-import { TOOLTIP_STYLE, PIE_COLORS } from "./chart-constants";
 
-const INNER_RADIUS = 45;
-const OUTER_RADIUS = 70;
+const COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--snooze))",
+  "hsl(var(--dismiss))",
+  "hsl(var(--destructive))",
+];
 
 interface BreakdownChartProps {
   pieData: { name: string; value: number }[];
@@ -18,6 +21,20 @@ interface BreakdownChartProps {
 
 const BreakdownChart = ({ pieData }: BreakdownChartProps) => {
   const { t } = useTranslation();
+  const total = pieData.reduce((s, d) => s + d.value, 0);
+
+  // Sort descending so largest bar is outermost
+  const radialData = pieData
+    .map((d, i) => {
+      const originalIndex = ["Fired", "Snoozed", "Dismissed", "Missed"].indexOf(d.name);
+      const pct = total > 0 ? Math.round((d.value / total) * 100) : 0;
+      return {
+        name: d.name,
+        value: pct,
+        fill: COLORS[originalIndex >= 0 ? originalIndex : i],
+      };
+    })
+    .sort((a, b) => a.value - b.value); // smallest innermost
 
   return (
     <Card>
@@ -28,38 +45,47 @@ const BreakdownChart = ({ pieData }: BreakdownChartProps) => {
         {pieData.length === 0 ? (
           <p className="py-8 text-center text-sm text-muted-foreground">{t("analytics.noData")}</p>
         ) : (
-          <ResponsiveContainer width="100%" height={240}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                cx="50%"
-                cy="45%"
-                innerRadius={INNER_RADIUS}
-                outerRadius={OUTER_RADIUS}
-                paddingAngle={1}
-                stroke="none"
-                dataKey="value"
-                label={false}
-              >
-                {pieData.map((_entry, index) => (
-                  <Cell key={index} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                ))}
-              </Pie>
-              <Legend
-                verticalAlign="bottom"
-                iconType="circle"
-                iconSize={8}
-                wrapperStyle={{ fontSize: 11, paddingTop: 8 }}
-                formatter={(value: string) => {
-                  const total = pieData.reduce((s, d) => s + d.value, 0);
-                  const item = pieData.find((d) => d.name === value);
-                  const pct = item && total > 0 ? Math.round((item.value / total) * 100) : 0;
-                  return <span style={{ color: "hsl(var(--muted-foreground))" }}>{value} {pct}%</span>;
-                }}
-              />
-              <Tooltip contentStyle={TOOLTIP_STYLE} />
-            </PieChart>
-          </ResponsiveContainer>
+          <div className="flex flex-col items-center gap-4">
+            <div className="relative w-[200px] h-[200px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadialBarChart
+                  cx="50%"
+                  cy="50%"
+                  innerRadius="30%"
+                  outerRadius="90%"
+                  data={radialData}
+                  startAngle={90}
+                  endAngle={-270}
+                  barSize={12}
+                >
+                  <RadialBar
+                    dataKey="value"
+                    cornerRadius={6}
+                    background={{ fill: "hsl(var(--muted) / 0.3)" }}
+                  />
+                </RadialBarChart>
+              </ResponsiveContainer>
+              {/* Center total */}
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-heading font-bold text-foreground">{total}</span>
+                <span className="text-[10px] text-muted-foreground font-body">Total</span>
+              </div>
+            </div>
+
+            {/* Legend */}
+            <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+              {radialData.map((d) => (
+                <div key={d.name} className="flex items-center gap-2 text-xs">
+                  <span
+                    className="h-2.5 w-2.5 rounded-full shrink-0"
+                    style={{ backgroundColor: d.fill }}
+                  />
+                  <span className="text-muted-foreground">{d.name}</span>
+                  <span className="font-semibold text-foreground ml-auto">{d.value}%</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
       </CardContent>
     </Card>
