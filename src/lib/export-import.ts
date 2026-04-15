@@ -79,8 +79,3 @@ export async function importAlarmsFromJson(
   return { imported, skipped };
 }
 
-/** Export alarms as JSON string (for programmatic use). */
-export function exportAlarmsToJson(): string {
-  // This is a sync helper used by tests — returns a promise-based wrapper
-  throw new Error("Use exportAlarms() instead or await listAlarms() directly");
-}
