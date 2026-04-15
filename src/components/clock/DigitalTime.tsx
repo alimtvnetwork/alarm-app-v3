@@ -90,8 +90,6 @@ const DigitalTime = () => {
   const displaySec = String(s).padStart(2, "0");
   const period = is24Hour ? null : (h >= 12 ? "PM" : "AM");
 
-  const countdown = getCountdown(alarms, t);
-
   return (
     <div className="flex flex-col items-center gap-3 w-full">
       {/* Flip-clock card */}
@@ -124,12 +122,6 @@ const DigitalTime = () => {
           year: "numeric",
         })}
       </p>
-      {countdown && (
-        <div className="inline-flex items-center gap-1.5 rounded-full bg-muted/60 px-4 py-1.5">
-          <span className="text-sm">⏰</span>
-          <span className="text-xs font-body text-muted-foreground">{countdown}</span>
-        </div>
-      )}
     </div>
   );
 };

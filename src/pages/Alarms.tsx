@@ -66,9 +66,6 @@ const Alarms = () => {
         </div>
       </div>
 
-      <div className="mt-4">
-        <AlarmTestButtons />
-      </div>
 
       <AlarmForm
         alarm={editingAlarm}
