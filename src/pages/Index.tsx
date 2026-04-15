@@ -19,6 +19,7 @@ const Index = () => {
     loadAlarms();
     loadGroups();
     loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
