@@ -4,9 +4,9 @@
   "version": "1.1.0",
   "identifier": "com.alarm-app",
   "build": {
-    "beforeDevCommand": "bun dev",
+    "beforeDevCommand": "npm run dev",
     "devUrl": "http://localhost:8080",
-    "beforeBuildCommand": "bun run build",
+    "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
   "app": {
