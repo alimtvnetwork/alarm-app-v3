@@ -1,7 +1,7 @@
 /**
  * Error Type System — Alarm App
  * Source: spec/03-error-manage-spec + src-tauri/src/errors.rs
- * Mirrors the 13-variant AlarmAppError enum and IPC error response format.
+ * Mirrors the 13-variant AlarmAppError enum, 7-variant WebhookError enum, and IPC error response format.
  */
 
 // ─── Error Code Enum (matches Rust error_code()) ─────────────────
@@ -20,6 +20,18 @@ export enum ErrorCode {
   ConcurrentModification = "ConcurrentModification",
   Validation = "Validation",
   ExportImport = "ExportImport",
+}
+
+// ─── Webhook Error Code Enum (7 variants — spec 12-smart-features.md) ──
+
+export enum WebhookErrorCode {
+  InvalidUrl = "WebhookInvalidUrl",
+  InsecureScheme = "WebhookInsecureScheme",
+  BlockedHost = "WebhookBlockedHost",
+  MissingHost = "WebhookMissingHost",
+  PrivateIp = "WebhookPrivateIp",
+  NonStandardPort = "WebhookNonStandardPort",
+  RequestFailed = "WebhookRequestFailed",
 }
 
 // ─── IPC Error Response (matches IpcErrorResponse struct) ────────
@@ -72,6 +84,14 @@ const SEVERITY_MAP: Record<string, ErrorSeverity> = {
   [ErrorCode.ConcurrentModification]: "error",
   [ErrorCode.Validation]: "warning",
   [ErrorCode.ExportImport]: "error",
+  // WebhookError variants — all warnings (SSRF validation failures)
+  [WebhookErrorCode.InvalidUrl]: "warning",
+  [WebhookErrorCode.InsecureScheme]: "warning",
+  [WebhookErrorCode.BlockedHost]: "warning",
+  [WebhookErrorCode.MissingHost]: "warning",
+  [WebhookErrorCode.PrivateIp]: "warning",
+  [WebhookErrorCode.NonStandardPort]: "warning",
+  [WebhookErrorCode.RequestFailed]: "error",
 };
 
 export function getSeverityForCode(code: string): ErrorSeverity {
@@ -96,6 +116,14 @@ const TOAST_MAP: Record<string, ToastType> = {
   [ErrorCode.ConcurrentModification]: "error",
   [ErrorCode.Validation]: "warning",
   [ErrorCode.ExportImport]: "error",
+  // WebhookError variants
+  [WebhookErrorCode.InvalidUrl]: "warning",
+  [WebhookErrorCode.InsecureScheme]: "warning",
+  [WebhookErrorCode.BlockedHost]: "warning",
+  [WebhookErrorCode.MissingHost]: "warning",
+  [WebhookErrorCode.PrivateIp]: "warning",
+  [WebhookErrorCode.NonStandardPort]: "warning",
+  [WebhookErrorCode.RequestFailed]: "error",
 };
 
 export function getToastTypeForCode(code: string): ToastType {

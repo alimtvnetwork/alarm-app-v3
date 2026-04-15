@@ -43,6 +43,30 @@ pub enum AlarmAppError {
     ExportImport(String),
 }
 
+#[derive(Error, Debug)]
+pub enum WebhookError {
+    #[error("Invalid webhook URL: {0}")]
+    InvalidUrl(String),
+
+    #[error("Insecure scheme: webhooks require HTTPS")]
+    InsecureScheme,
+
+    #[error("Blocked host: {0}")]
+    BlockedHost(String),
+
+    #[error("Missing host in webhook URL")]
+    MissingHost,
+
+    #[error("Private IP address not allowed: {0}")]
+    PrivateIp(String),
+
+    #[error("Non-standard port not allowed: {0}")]
+    NonStandardPort(u16),
+
+    #[error("Webhook request failed: {0}")]
+    RequestFailed(String),
+}
+
 /// Structured IPC error returned to the frontend.
 #[derive(Serialize)]
 pub struct IpcErrorResponse {
