@@ -112,6 +112,12 @@ export function ensureInitialized(): Promise<void> {
       const { migrateLocalStorageToIDB } = await import("@/lib/db-migration");
       await migrateLocalStorageToIDB();
       await seedIfEmpty();
+      // Purge expired events based on EventRetentionDays setting
+      const { purgeExpiredEvents } = await import("@/lib/db-transactions");
+      const purged = await purgeExpiredEvents();
+      if (purged > 0) {
+        console.info(`[AlarmApp] Purged ${purged} expired event(s)`);
+      }
     })();
   }
   return initPromise;
