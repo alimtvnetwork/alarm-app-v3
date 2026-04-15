@@ -33,8 +33,10 @@ function downloadCsv(content: string): void {
   const a = document.createElement("a");
   a.href = url;
   a.download = `alarm-history-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
   a.click();
-  URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 100);
 }
 
 const Analytics = () => {
