@@ -52,7 +52,7 @@ export function normalizeAlarm(raw: unknown): Alarm {
     };
   }
 
-  return alarm as Alarm;
+  return alarm as unknown as Alarm;
 }
 
 /**
