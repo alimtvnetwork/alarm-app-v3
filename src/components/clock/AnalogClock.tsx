@@ -56,7 +56,8 @@ function HandLine({
 
 const AnalogClock = () => {
   const [now, setNow] = useState(new Date());
-  const timeZone = useSettingsStore((s) => s.settings.SystemTimezone);
+  const rawTimeZone = useSettingsStore((s) => s.settings.SystemTimezone);
+  const timeZone = normalizeAlarmTimezone(rawTimeZone);
 
   useEffect(() => {
     const id = setInterval(() => setNow(new Date()), 1000);

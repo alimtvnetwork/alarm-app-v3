@@ -17,7 +17,7 @@ const AlarmDebugPanel = () => {
   }, []);
 
   const localTime = now.toLocaleString("en-GB", {
-    timeZone: settings.SystemTimezone,
+    timeZone: normalizeAlarmTimezone(settings.SystemTimezone),
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
