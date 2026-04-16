@@ -24,11 +24,12 @@ const WEEK_LOOKAHEAD_DAYS = 7;
 const formatterCache = new Map<string, Intl.DateTimeFormat>();
 
 function getFormatter(timeZone: string): Intl.DateTimeFormat {
-  const cached = formatterCache.get(timeZone);
+  const tz = normalizeAlarmTimezone(timeZone);
+  const cached = formatterCache.get(tz);
   if (cached) return cached;
 
   const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
+    timeZone: tz,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -38,7 +39,7 @@ function getFormatter(timeZone: string): Intl.DateTimeFormat {
     hour12: false,
   });
 
-  formatterCache.set(timeZone, formatter);
+  formatterCache.set(tz, formatter);
   return formatter;
 }
 
