@@ -475,7 +475,7 @@ impl Default for SettingsResponse {
     fn default() -> Self {
         Self {
             theme: ThemeMode::System,
-            theme_skin: "default".to_string(),
+            theme_skin: "vscode".to_string(),
             accent_color: "#8b7355".to_string(),
             is_24_hour: false,
             default_snooze_duration_min: 5,

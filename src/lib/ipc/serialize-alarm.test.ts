@@ -11,5 +11,6 @@ describe("serializeAlarmForTauri", () => {
     expect(payload.RepeatDaysOfWeek).toBe("[1,2,3,4,5]");
     expect(payload.RepeatIntervalMinutes).toBe(0);
     expect(payload.RepeatCronExpression).toBe("");
+    expect(payload.NextFireTime).toBe(MOCK_ALARMS[0].NextFireTime);
   });
 });
