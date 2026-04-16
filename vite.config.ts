@@ -6,6 +6,8 @@ import { componentTagger } from "lovable-tagger";
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const isDev = mode === "development";
+  // Tauri sets TAURI_ENV_PLATFORM during builds — only use real @tauri-apps when present
+  const isTauriBuild = !!process.env.TAURI_ENV_PLATFORM;
   const tauriStub = path.resolve(__dirname, "./src/lib/tauri-event-stub.ts");
 
   return {
@@ -20,8 +22,8 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
-        // Stub Tauri APIs in dev (web preview) — in production build they're externalized
-        ...(isDev
+        // Stub Tauri APIs when NOT building for Tauri (web preview + Lovable preview)
+        ...(!isTauriBuild
           ? {
               "@tauri-apps/api/event": tauriStub,
               "@tauri-apps/api/core": tauriStub,
@@ -39,7 +41,8 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
-        external: [/^@tauri-apps\//],
+        // Only externalize @tauri-apps in actual Tauri builds
+        ...(isTauriBuild ? { external: [/^@tauri-apps\//] } : {}),
         output: {
           manualChunks: {
             vendor: ["react", "react-dom", "react-router-dom", "zustand"],
