@@ -13,8 +13,8 @@ interface TimeParts {
 const formatterCache = new Map<string, Intl.DateTimeFormat>();
 
 function getFormatter(timeZone: string): Intl.DateTimeFormat {
-  const cached = formatterCache.get(timeZone);
-  if (cached) return cached;
+  const tz = normalizeAlarmTimezone(timeZone);
+  const cached = formatterCache.get(tz);
 
   const fmt = new Intl.DateTimeFormat("en-GB", {
     timeZone,
