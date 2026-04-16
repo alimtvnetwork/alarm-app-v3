@@ -5,7 +5,11 @@
 
 import type { Alarm } from "@/types/alarm";
 import { RepeatType } from "@/types/alarm";
-import { DEFAULT_ALARM_TIMEZONE, normalizeAlarmTimezone } from "@/lib/alarm-timezone";
+import {
+  DEFAULT_ALARM_TIMEZONE,
+  normalizeAlarmTimezone,
+} from "@/lib/alarm-timezone";
+import { normalizeAlarm } from "@/lib/normalize-alarm";
 
 interface CalendarDate {
   year: number;
@@ -43,7 +47,10 @@ function getFormatter(timeZone: string): Intl.DateTimeFormat {
   return formatter;
 }
 
-function readPart(parts: Intl.DateTimeFormatPart[], type: Intl.DateTimeFormatPartTypes): number {
+function readPart(
+  parts: Intl.DateTimeFormatPart[],
+  type: Intl.DateTimeFormatPartTypes,
+): number {
   return Number(parts.find((part) => part.type === type)?.value ?? 0);
 }
 
@@ -152,29 +159,51 @@ function computeWeekly(alarm: Alarm, time: ClockTime, now: Date, timeZone: strin
   return null;
 }
 
+function logComputeNextFireTimeError(
+  error: unknown,
+  alarm: Alarm,
+  timeZone: string,
+): void {
+  console.error("[computeNextFireTime] Failed", {
+    alarmId: alarm.AlarmId,
+    time: alarm.Time,
+    date: alarm.Date,
+    isEnabled: alarm.IsEnabled,
+    repeat: alarm.Repeat ?? null,
+    timeZone,
+    error,
+  });
+}
+
 export function computeNextFireTime(
   alarm: Alarm,
   timeZone = DEFAULT_ALARM_TIMEZONE,
   now = new Date(),
 ): string | null {
-  if (!alarm.IsEnabled) return null;
+  try {
+    const normalizedAlarm = normalizeAlarm(alarm);
+    if (!normalizedAlarm.IsEnabled) return null;
 
-  const time = parseTime(alarm.Time);
-  if (!time) return null;
+    const time = parseTime(normalizedAlarm.Time);
+    if (!time) return null;
 
-  const resolvedTimeZone = normalizeAlarmTimezone(timeZone);
+    const resolvedTimeZone = normalizeAlarmTimezone(timeZone);
 
-  if (alarm.Repeat.Type === RepeatType.Once) {
-    return computeOnce(alarm, time, now, resolvedTimeZone);
+    if (normalizedAlarm.Repeat.Type === RepeatType.Once) {
+      return computeOnce(normalizedAlarm, time, now, resolvedTimeZone);
+    }
+
+    if (normalizedAlarm.Repeat.Type === RepeatType.Daily) {
+      return computeDaily(time, now, resolvedTimeZone);
+    }
+
+    if (normalizedAlarm.Repeat.Type === RepeatType.Weekly) {
+      return computeWeekly(normalizedAlarm, time, now, resolvedTimeZone);
+    }
+
+    return null;
+  } catch (error) {
+    logComputeNextFireTimeError(error, alarm, timeZone);
+    throw error;
   }
-
-  if (alarm.Repeat.Type === RepeatType.Daily) {
-    return computeDaily(time, now, resolvedTimeZone);
-  }
-
-  if (alarm.Repeat.Type === RepeatType.Weekly) {
-    return computeWeekly(alarm, time, now, resolvedTimeZone);
-  }
-
-  return null;
 }
