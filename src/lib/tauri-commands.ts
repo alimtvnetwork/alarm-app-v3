@@ -14,6 +14,7 @@ import type {
   Settings,
   IpcErrorResponse,
 } from "@/types/alarm";
+import { normalizeAlarm, normalizeAlarms } from "@/lib/normalize-alarm";
 
 const IPC_TIMEOUT_MS = 5000;
 const IS_TAURI = typeof window !== "undefined" && "__TAURI__" in window;
@@ -90,17 +91,20 @@ function mapErrorCodeToMessage(code: string, message: string): string {
 // ── Typed Command Wrappers ───────────────────────────────────────
 
 export async function listAlarms(): Promise<Alarm[]> {
-  return (await safeInvoke<Alarm[]>("list_alarms")) ?? [];
+  const raw = (await safeInvoke<unknown[]>("list_alarms")) ?? [];
+  return normalizeAlarms(raw);
 }
 
 export async function createAlarm(
   payload: Partial<Alarm>
 ): Promise<Alarm | null> {
-  return safeInvoke<Alarm>("create_alarm", { payload });
+  const raw = await safeInvoke<unknown>("create_alarm", { payload });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function updateAlarm(alarm: Alarm): Promise<Alarm | null> {
-  return safeInvoke<Alarm>("update_alarm", { alarm });
+  const raw = await safeInvoke<unknown>("update_alarm", { alarm });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function deleteAlarm(
@@ -114,15 +118,18 @@ export async function deleteAlarm(
 export async function undoDeleteAlarm(
   undoToken: string
 ): Promise<Alarm | null> {
-  return safeInvoke<Alarm>("undo_delete_alarm", { undoToken });
+  const raw = await safeInvoke<unknown>("undo_delete_alarm", { undoToken });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function toggleAlarm(alarmId: string): Promise<Alarm | null> {
-  return safeInvoke<Alarm>("toggle_alarm", { alarmId });
+  const raw = await safeInvoke<unknown>("toggle_alarm", { alarmId });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function duplicateAlarm(alarmId: string): Promise<Alarm | null> {
-  return safeInvoke<Alarm>("duplicate_alarm", { alarmId });
+  const raw = await safeInvoke<unknown>("duplicate_alarm", { alarmId });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function reorderAlarms(alarmIds: string[]): Promise<void> {
