@@ -29,7 +29,7 @@ function getFormatter(timeZone: string): Intl.DateTimeFormat {
   if (cached) return cached;
 
   const formatter = new Intl.DateTimeFormat("en-CA", {
-    timeZone,
+    timeZone: tz,
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
@@ -39,7 +39,7 @@ function getFormatter(timeZone: string): Intl.DateTimeFormat {
     hour12: false,
   });
 
-  formatterCache.set(timeZone, formatter);
+  formatterCache.set(tz, formatter);
   return formatter;
 }
 
