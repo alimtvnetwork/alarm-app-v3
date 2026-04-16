@@ -21,6 +21,17 @@ import { useAlarmStore } from "@/stores/alarm-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import { useState, useRef } from "react";
 
+const NO_SNOOZE_COUNT = 0;
+
+function formatSnoozeDetails(alarm: Alarm): string {
+  if (alarm.MaxSnoozeCount === NO_SNOOZE_COUNT) {
+    return "No snooze retries";
+  }
+
+  const retryLabel = alarm.MaxSnoozeCount === 1 ? "retry" : "retries";
+  return `Wait ${alarm.SnoozeDurationMin} min · ${alarm.MaxSnoozeCount} ${retryLabel}`;
+}
+
 function formatRepeat(alarm: Alarm, t: (key: string) => string): string {
   const { Repeat } = alarm;
   switch (Repeat.Type) {
@@ -159,6 +170,9 @@ const AlarmCard = ({ alarm, group, onEdit, onDelete }: AlarmCardProps) => {
               </span>
               <span className="text-xs text-muted-foreground/80 font-body">
                 {formatRepeat(alarm, t)}
+              </span>
+              <span className="text-[0.7rem] font-body text-muted-foreground/70">
+                {formatSnoozeDetails(alarm)}
               </span>
             </div>
           </button>
