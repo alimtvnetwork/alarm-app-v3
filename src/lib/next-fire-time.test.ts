@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { Alarm } from "@/types/alarm";
 import { DEFAULT_REPEAT_PATTERN, RepeatType } from "@/types/alarm";
-import { DEFAULT_ALARM_TIMEZONE, normalizeAlarmTimezone } from "@/lib/alarm-timezone";
+import {
+  DEFAULT_ALARM_TIMEZONE,
+  normalizeAlarmTimezone,
+} from "@/lib/alarm-timezone";
 import { computeNextFireTime } from "@/lib/next-fire-time";
 
 function buildAlarm(partial: Partial<Alarm>): Alarm {
@@ -38,7 +41,11 @@ describe("computeNextFireTime", () => {
   it("computes the next daily alarm in Malaysia time", () => {
     const now = new Date("2026-04-13T00:00:00.000Z");
 
-    const nextFireTime = computeNextFireTime(buildAlarm({}), DEFAULT_ALARM_TIMEZONE, now);
+    const nextFireTime = computeNextFireTime(
+      buildAlarm({}),
+      DEFAULT_ALARM_TIMEZONE,
+      now,
+    );
 
     expect(nextFireTime).toBe("2026-04-13T00:01:00.000Z");
   });
@@ -46,7 +53,11 @@ describe("computeNextFireTime", () => {
   it("rolls the next daily alarm to tomorrow after the local time passes", () => {
     const now = new Date("2026-04-13T00:02:00.000Z");
 
-    const nextFireTime = computeNextFireTime(buildAlarm({}), DEFAULT_ALARM_TIMEZONE, now);
+    const nextFireTime = computeNextFireTime(
+      buildAlarm({}),
+      DEFAULT_ALARM_TIMEZONE,
+      now,
+    );
 
     expect(nextFireTime).toBe("2026-04-14T00:01:00.000Z");
   });
@@ -65,6 +76,26 @@ describe("computeNextFireTime", () => {
     );
 
     expect(nextFireTime).toBe("2026-04-12T23:30:00.000Z");
+  });
+
+  it("normalizes flat repeat fields before reading alarm.Repeat.Type", () => {
+    const now = new Date("2026-04-13T00:00:00.000Z");
+    const rawAlarm = {
+      ...buildAlarm({}),
+      Repeat: undefined,
+      RepeatType: RepeatType.Daily,
+      DaysOfWeek: [],
+      IntervalMinutes: 0,
+      CronExpression: "",
+    } as unknown as Alarm;
+
+    const nextFireTime = computeNextFireTime(
+      rawAlarm,
+      DEFAULT_ALARM_TIMEZONE,
+      now,
+    );
+
+    expect(nextFireTime).toBe("2026-04-13T00:01:00.000Z");
   });
 
   it("normalizes legacy UTC settings to Malaysia time", () => {
