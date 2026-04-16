@@ -428,7 +428,76 @@ if ($install) {
             Write-Host "  ✓ Tauri CLI: $tauriVer" -ForegroundColor Green
         }
 
-        # 7. Summary
+        # 7. Generate Tauri signing keys (if not already present)
+        Write-Host ""
+        Write-Host "  Checking Tauri signing keys..." -ForegroundColor Gray
+        $TauriKeyDir = Join-Path $env:USERPROFILE ".tauri"
+        if (-not $IsMacOS -and -not $IsLinux) {
+            $TauriKeyDir = Join-Path $env:USERPROFILE ".tauri"
+        } else {
+            $TauriKeyDir = Join-Path $env:HOME ".tauri"
+        }
+        $TauriKeyFile = Join-Path $TauriKeyDir "alarm-app.key"
+        $TauriPubKeyFile = "$TauriKeyFile.pub"
+
+        if (Test-Path $TauriKeyFile) {
+            Write-Host "  ✓ Signing key already exists: $TauriKeyFile" -ForegroundColor Green
+        } else {
+            Write-Host "  Generating Tauri signing key pair..." -ForegroundColor Yellow
+            if (-not (Test-Path $TauriKeyDir)) {
+                New-Item -ItemType Directory -Path $TauriKeyDir -Force | Out-Null
+            }
+            # Generate key — user will be prompted for password
+            Write-Host "  → You will be prompted for a key password (remember it for CI!)" -ForegroundColor Cyan
+            npx tauri signer generate -w $TauriKeyFile 2>&1 | Out-Host
+            if (Test-Path $TauriKeyFile) {
+                Write-Host "  ✓ Signing key generated: $TauriKeyFile" -ForegroundColor Green
+                Write-Host "  ✓ Public key: $TauriPubKeyFile" -ForegroundColor Green
+
+                # Read public key and update tauri.conf.json
+                $pubKey = Get-Content $TauriPubKeyFile -Raw
+                $pubKey = $pubKey.Trim()
+                $tauriConfPath = Join-Path $ScriptDir "src-tauri" "tauri.conf.json"
+                if (Test-Path $tauriConfPath) {
+                    $tauriConf = Get-Content $tauriConfPath -Raw
+                    if ($tauriConf -match "REPLACE_WITH_YOUR_PUBLIC_KEY") {
+                        $tauriConf = $tauriConf -replace "REPLACE_WITH_YOUR_PUBLIC_KEY", $pubKey
+                        Set-Content $tauriConfPath $tauriConf -NoNewline
+                        Write-Host "  ✓ Public key auto-inserted into tauri.conf.json" -ForegroundColor Green
+                    } else {
+                        Write-Host "  ℹ tauri.conf.json already has a public key — skipping" -ForegroundColor Gray
+                    }
+                }
+            } else {
+                Write-Host "  ⚠ Key generation failed — you can retry manually:" -ForegroundColor Yellow
+                Write-Host "    npx tauri signer generate -w $TauriKeyFile" -ForegroundColor Yellow
+            }
+        }
+
+        # 8. Print GitHub secrets setup guide
+        Write-Host ""
+        Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
+        Write-Host "  📋 GitHub Secrets Setup (one-time)" -ForegroundColor Magenta
+        Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
+        Write-Host ""
+        Write-Host "  Go to: GitHub → Settings → Secrets → Actions" -ForegroundColor White
+        Write-Host "  Add these secrets:" -ForegroundColor White
+        Write-Host ""
+        Write-Host "  Required:" -ForegroundColor Yellow
+        Write-Host "    TAURI_SIGNING_PRIVATE_KEY       → contents of $TauriKeyFile" -ForegroundColor White
+        Write-Host "    TAURI_SIGNING_PRIVATE_KEY_PASSWORD → password you entered above" -ForegroundColor White
+        Write-Host ""
+        Write-Host "  macOS code signing (optional):" -ForegroundColor Yellow
+        Write-Host "    APPLE_CERTIFICATE               → base64 .p12 cert" -ForegroundColor White
+        Write-Host "    APPLE_CERTIFICATE_PASSWORD       → cert password" -ForegroundColor White
+        Write-Host "    APPLE_SIGNING_IDENTITY           → Developer ID Application: ..." -ForegroundColor White
+        Write-Host "    APPLE_ID                         → your Apple ID email" -ForegroundColor White
+        Write-Host "    APPLE_PASSWORD                   → app-specific password" -ForegroundColor White
+        Write-Host "    APPLE_TEAM_ID                    → 10-char team ID" -ForegroundColor White
+        Write-Host ""
+        Write-Host "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Magenta
+
+        # 9. Summary
         $stepWatch.Stop()
         Write-Host ""
         Write-Host "========================================" -ForegroundColor Cyan

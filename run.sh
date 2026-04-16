@@ -322,10 +322,76 @@ if $FLAG_INSTALL; then
     print_success "Dependencies installed"
     popd > /dev/null
 
+    # Generate Tauri signing keys if not present
+    echo ""
+    print_gray "Checking Tauri signing keys..."
+    TAURI_KEY_DIR="$HOME/.tauri"
+    TAURI_KEY_FILE="$TAURI_KEY_DIR/alarm-app.key"
+    TAURI_PUB_FILE="$TAURI_KEY_FILE.pub"
+
+    if [[ -f "$TAURI_KEY_FILE" ]]; then
+      print_success "Signing key already exists: $TAURI_KEY_FILE"
+    else
+      echo -e "  ${C_YELLOW}Generating Tauri signing key pair...${C_RESET}"
+      mkdir -p "$TAURI_KEY_DIR"
+      echo -e "  ${C_CYAN}→ You will be prompted for a key password (remember it for CI!)${C_RESET}"
+      pushd "$FRONTEND_DIR" > /dev/null
+      npx tauri signer generate -w "$TAURI_KEY_FILE" 2>&1
+      popd > /dev/null
+      if [[ -f "$TAURI_KEY_FILE" ]]; then
+        print_success "Signing key generated: $TAURI_KEY_FILE"
+        print_success "Public key: $TAURI_PUB_FILE"
+
+        # Auto-insert public key into tauri.conf.json
+        TAURI_CONF="$SCRIPT_DIR/src-tauri/tauri.conf.json"
+        if [[ -f "$TAURI_CONF" ]]; then
+          if grep -q "REPLACE_WITH_YOUR_PUBLIC_KEY" "$TAURI_CONF"; then
+            PUB_KEY=$(cat "$TAURI_PUB_FILE" | tr -d '\n')
+            sed -i.bak "s|REPLACE_WITH_YOUR_PUBLIC_KEY|$PUB_KEY|g" "$TAURI_CONF"
+            rm -f "$TAURI_CONF.bak"
+            print_success "Public key auto-inserted into tauri.conf.json"
+          else
+            print_gray "tauri.conf.json already has a public key — skipping"
+          fi
+        fi
+      else
+        print_warn "Key generation failed — retry manually:"
+        echo "    npx tauri signer generate -w $TAURI_KEY_FILE"
+      fi
+    fi
+
+    # Print GitHub secrets setup guide
+    echo ""
+    echo -e "  ${C_MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+    echo -e "  ${C_MAGENTA}📋 GitHub Secrets Setup (one-time)${C_RESET}"
+    echo -e "  ${C_MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+    echo ""
+    echo "  Go to: GitHub → Settings → Secrets → Actions"
+    echo "  Add these secrets:"
+    echo ""
+    echo -e "  ${C_YELLOW}Required:${C_RESET}"
+    echo "    TAURI_SIGNING_PRIVATE_KEY         → contents of $TAURI_KEY_FILE"
+    echo "    TAURI_SIGNING_PRIVATE_KEY_PASSWORD → password you entered above"
+    echo ""
+    echo -e "  ${C_YELLOW}macOS code signing (optional):${C_RESET}"
+    echo "    APPLE_CERTIFICATE                 → base64 .p12 cert"
+    echo "    APPLE_CERTIFICATE_PASSWORD         → cert password"
+    echo "    APPLE_SIGNING_IDENTITY             → Developer ID Application: ..."
+    echo "    APPLE_ID                           → your Apple ID email"
+    echo "    APPLE_PASSWORD                     → app-specific password"
+    echo "    APPLE_TEAM_ID                      → 10-char team ID"
+    echo ""
+    echo -e "  ${C_MAGENTA}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${C_RESET}"
+
     echo ""
     print_header "========================================"
-    print_header "  Dependencies installed!"
+    print_header "  ✅ Dev environment ready!"
     print_header "  Time: $(format_elapsed $STEP_START)"
+    print_header ""
+    print_header "  Next steps:"
+    echo "    ./run.sh        Build + start dev server"
+    echo "    ./run.sh -d     Tauri dev mode (hot-reload)"
+    echo "    ./run.sh -t     Build Tauri desktop app"
     print_header "========================================"
     exit 0
   fi
