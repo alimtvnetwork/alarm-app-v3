@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { useSettingsStore } from "@/stores/settings-store";
 import { getTimeParts } from "@/lib/timezone-clock";
+import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 
 const CLOCK_SIZE = 220;
 const CENTER = CLOCK_SIZE / 2;

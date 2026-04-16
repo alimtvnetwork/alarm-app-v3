@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "@/stores/settings-store";
 import { getTimeParts } from "@/lib/timezone-clock";
+import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 
 interface AnimatedDigitProps {
   digit: string;

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAlarmStore } from "@/stores/alarm-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import { Bug, ChevronDown, ChevronUp } from "lucide-react";
+import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 
 const TICK_MS = 1000;
 
