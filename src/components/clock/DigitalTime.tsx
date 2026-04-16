@@ -8,6 +8,7 @@ import { useEffect, useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useSettingsStore } from "@/stores/settings-store";
 import { getTimeParts } from "@/lib/timezone-clock";
+import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 
 interface AnimatedDigitProps {
   digit: string;
@@ -70,7 +71,8 @@ const Colon = () => (
 const DigitalTime = () => {
   const [now, setNow] = useState(new Date());
   const is24Hour = useSettingsStore((s) => s.settings.Is24Hour);
-  const timeZone = useSettingsStore((s) => s.settings.SystemTimezone);
+  const rawTimeZone = useSettingsStore((s) => s.settings.SystemTimezone);
+  const timeZone = normalizeAlarmTimezone(rawTimeZone);
   
   const { t } = useTranslation();
 

@@ -4,6 +4,8 @@
  * so clock displays match the configured SystemTimezone.
  */
 
+import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
+
 interface TimeParts {
   hours: number;
   minutes: number;
@@ -13,18 +15,19 @@ interface TimeParts {
 const formatterCache = new Map<string, Intl.DateTimeFormat>();
 
 function getFormatter(timeZone: string): Intl.DateTimeFormat {
-  const cached = formatterCache.get(timeZone);
+  const tz = normalizeAlarmTimezone(timeZone);
+  const cached = formatterCache.get(tz);
   if (cached) return cached;
 
   const fmt = new Intl.DateTimeFormat("en-GB", {
-    timeZone,
+    timeZone: tz,
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
     hour12: false,
   });
 
-  formatterCache.set(timeZone, fmt);
+  formatterCache.set(tz, fmt);
   return fmt;
 }
 

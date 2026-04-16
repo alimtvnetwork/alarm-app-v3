@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAlarmStore } from "@/stores/alarm-store";
 import { useSettingsStore } from "@/stores/settings-store";
 import { Bug, ChevronDown, ChevronUp } from "lucide-react";
+import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 
 const TICK_MS = 1000;
 
@@ -17,7 +18,7 @@ const AlarmDebugPanel = () => {
   }, []);
 
   const localTime = now.toLocaleString("en-GB", {
-    timeZone: settings.SystemTimezone,
+    timeZone: normalizeAlarmTimezone(settings.SystemTimezone),
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
