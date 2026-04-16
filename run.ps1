@@ -204,7 +204,9 @@ function Install-Rust {
 
 function Install-TauriCli {
     Write-Host "  Installing Tauri CLI..." -ForegroundColor Yellow
+    Push-Location $FrontendDir
     npm install -D @tauri-apps/cli
+    Pop-Location
     Write-Host "  ✓ Tauri CLI installed" -ForegroundColor Green
 }
 
@@ -517,14 +519,39 @@ if ($install) {
 # TAURI DEV MODE (-td)
 # ============================================================================
 if ($tauridev) {
-    Write-Host "[3/5] Starting Tauri dev mode..." -ForegroundColor Yellow
+    Write-Host "[DEV] Setting up Tauri dev mode..." -ForegroundColor Yellow
 
+    # Auto-install Rust if missing
+    if (($IsMacOS -or $IsLinux) -and (Test-Path "$env:HOME/.cargo/bin")) {
+        $env:Path = "$env:HOME/.cargo/bin:$env:Path"
+    }
+    if (-not (Test-Command "rustc")) { Install-Rust }
+    $rustVer = rustc --version 2>&1
+    Write-Host "  ✓ Rust: $rustVer" -ForegroundColor Green
+
+    # Auto-install dependencies if missing
     Push-Location $FrontendDir
     try {
         if (-not (Test-Path "node_modules")) {
-            Write-Host "  Installing dependencies first..." -ForegroundColor Gray
+            Write-Host "  Installing dependencies..." -ForegroundColor Gray
             Invoke-Expression $InstallCommand
+            Write-Host "  ✓ Dependencies installed" -ForegroundColor Green
         }
+
+        # Auto-install Tauri CLI if missing
+        $tauriFound = $false
+        try {
+            $tauriVer = npx tauri --version 2>&1
+            if ($LASTEXITCODE -eq 0) { $tauriFound = $true }
+        } catch {}
+        if (-not $tauriFound) { Install-TauriCli }
+        Write-Host "  ✓ Tauri CLI ready" -ForegroundColor Green
+
+        # macOS: Xcode CLT
+        Install-XcodeCommandLineTools
+
+        # Linux: system libraries
+        Install-LinuxDependencies
 
         Write-Host ""
         Write-Host "========================================" -ForegroundColor Cyan
