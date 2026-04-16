@@ -78,7 +78,7 @@ describe("computeNextFireTime", () => {
     expect(nextFireTime).toBe("2026-04-12T23:30:00.000Z");
   });
 
-  it("normalizes flat repeat fields before reading alarm.Repeat.Type", () => {
+  it("normalizes simple flat repeat fields before reading alarm.Repeat.Type", () => {
     const now = new Date("2026-04-13T00:00:00.000Z");
     const rawAlarm = {
       ...buildAlarm({}),
@@ -87,6 +87,26 @@ describe("computeNextFireTime", () => {
       DaysOfWeek: [],
       IntervalMinutes: 0,
       CronExpression: "",
+    } as unknown as Alarm;
+
+    const nextFireTime = computeNextFireTime(
+      rawAlarm,
+      DEFAULT_ALARM_TIMEZONE,
+      now,
+    );
+
+    expect(nextFireTime).toBe("2026-04-13T00:01:00.000Z");
+  });
+
+  it("normalizes Rust RepeatDaysOfWeek payloads before reading alarm.Repeat.Type", () => {
+    const now = new Date("2026-04-13T00:00:00.000Z");
+    const rawAlarm = {
+      ...buildAlarm({}),
+      Repeat: undefined,
+      RepeatType: RepeatType.Weekly,
+      RepeatDaysOfWeek: "[1,3,5]",
+      RepeatIntervalMinutes: 0,
+      RepeatCronExpression: "",
     } as unknown as Alarm;
 
     const nextFireTime = computeNextFireTime(

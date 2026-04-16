@@ -3,35 +3,52 @@
  * always have a valid `Repeat` field and other required nested objects.
  *
  * Root cause: The Rust backend may serialize RepeatPattern fields flat
- * (RepeatType, DaysOfWeek, IntervalMinutes, CronExpression) instead of
- * as a nested `Repeat` object, causing `alarm.Repeat` to be undefined
- * and crashing with "undefined is not an object (evaluating 'Repeat.Type')".
+ * (RepeatType, RepeatDaysOfWeek, RepeatIntervalMinutes, RepeatCronExpression)
+ * instead of as a nested `Repeat` object, causing `alarm.Repeat` to be
+ * undefined and crashing with "undefined is not an object (evaluating 'Repeat.Type')".
  */
 
 import { RepeatType, DEFAULT_REPEAT_PATTERN } from "@/types/alarm";
 import type { Alarm, RepeatPattern } from "@/types/alarm";
 
+function parseDaysOfWeek(value: unknown): number[] {
+  if (Array.isArray(value)) {
+    return value.filter((day): day is number => typeof day === "number");
+  }
+  if (typeof value !== "string") {
+    return [];
+  }
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    return Array.isArray(parsed)
+      ? parsed.filter((day): day is number => typeof day === "number")
+      : [];
+  } catch {
+    return [];
+  }
+}
+
 /**
  * Normalizes an alarm object to ensure all required fields exist.
  * Handles:
  * - Missing `Repeat` → uses DEFAULT_REPEAT_PATTERN
- * - Flat Rust fields (RepeatType, DaysOfWeek, etc.) → rebuilds nested Repeat
+ * - Flat Rust fields (RepeatType, RepeatDaysOfWeek, etc.) → rebuilds nested Repeat
  * - Partial Repeat object → fills missing sub-fields
  */
 export function normalizeAlarm(raw: unknown): Alarm {
   const alarm = raw as Record<string, unknown>;
 
-  // Build Repeat from flat fields if nested Repeat is missing
   if (!alarm.Repeat || typeof alarm.Repeat !== "object") {
     alarm.Repeat = buildRepeatFromFlat(alarm);
   } else {
-    // Ensure all sub-fields exist even if Repeat is partial
     const repeat = alarm.Repeat as Partial<RepeatPattern>;
     alarm.Repeat = {
       Type: repeat.Type ?? RepeatType.Once,
-      DaysOfWeek: Array.isArray(repeat.DaysOfWeek) ? repeat.DaysOfWeek : [],
-      IntervalMinutes: typeof repeat.IntervalMinutes === "number" ? repeat.IntervalMinutes : 0,
-      CronExpression: typeof repeat.CronExpression === "string" ? repeat.CronExpression : "",
+      DaysOfWeek: parseDaysOfWeek(repeat.DaysOfWeek),
+      IntervalMinutes:
+        typeof repeat.IntervalMinutes === "number" ? repeat.IntervalMinutes : 0,
+      CronExpression:
+        typeof repeat.CronExpression === "string" ? repeat.CronExpression : "",
     };
   }
 
@@ -40,21 +57,42 @@ export function normalizeAlarm(raw: unknown): Alarm {
 
 /**
  * Builds a RepeatPattern from flat Rust-style fields on the alarm object.
- * Looks for: RepeatType, DaysOfWeek, IntervalMinutes, CronExpression
  */
 function buildRepeatFromFlat(alarm: Record<string, unknown>): RepeatPattern {
-  const repeatType = (alarm.RepeatType as string) ?? (alarm.repeat_type as string);
-  const daysOfWeek = (alarm.DaysOfWeek as number[]) ?? (alarm.days_of_week as number[]);
-  const intervalMinutes = (alarm.IntervalMinutes as number) ?? (alarm.interval_minutes as number);
-  const cronExpression = (alarm.CronExpression as string) ?? (alarm.cron_expression as string);
+  const repeatType =
+    (alarm.RepeatType as string)
+    ?? (alarm.repeat_type as string)
+    ?? (alarm.Type as string)
+    ?? "";
+  const daysOfWeek =
+    alarm.RepeatDaysOfWeek
+    ?? alarm.repeat_days_of_week
+    ?? alarm.DaysOfWeek
+    ?? alarm.days_of_week;
+  const intervalMinutes =
+    (alarm.RepeatIntervalMinutes as number)
+    ?? (alarm.repeat_interval_minutes as number)
+    ?? (alarm.IntervalMinutes as number)
+    ?? (alarm.interval_minutes as number);
+  const cronExpression =
+    (alarm.RepeatCronExpression as string)
+    ?? (alarm.repeat_cron_expression as string)
+    ?? (alarm.CronExpression as string)
+    ?? (alarm.cron_expression as string);
 
-  // Clean up flat fields so they don't pollute the object
   delete alarm.RepeatType;
   delete alarm.repeat_type;
+  delete alarm.Type;
+  delete alarm.RepeatDaysOfWeek;
+  delete alarm.repeat_days_of_week;
   delete alarm.DaysOfWeek;
   delete alarm.days_of_week;
+  delete alarm.RepeatIntervalMinutes;
+  delete alarm.repeat_interval_minutes;
   delete alarm.IntervalMinutes;
   delete alarm.interval_minutes;
+  delete alarm.RepeatCronExpression;
+  delete alarm.repeat_cron_expression;
   delete alarm.CronExpression;
   delete alarm.cron_expression;
 
@@ -66,7 +104,7 @@ function buildRepeatFromFlat(alarm: Record<string, unknown>): RepeatPattern {
     Type: (Object.values(RepeatType).includes(repeatType as RepeatType)
       ? repeatType
       : RepeatType.Once) as RepeatType,
-    DaysOfWeek: Array.isArray(daysOfWeek) ? daysOfWeek : [],
+    DaysOfWeek: parseDaysOfWeek(daysOfWeek),
     IntervalMinutes: typeof intervalMinutes === "number" ? intervalMinutes : 0,
     CronExpression: typeof cronExpression === "string" ? cronExpression : "",
   };

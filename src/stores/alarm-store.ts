@@ -5,10 +5,11 @@
 
 import { create } from "zustand";
 import type { Alarm, AlarmGroup } from "@/types/alarm";
-import { RepeatType, DEFAULT_REPEAT_PATTERN } from "@/types/alarm";
+import { DEFAULT_REPEAT_PATTERN } from "@/types/alarm";
 import * as ipc from "@/lib/ipc-adapter";
 import { computeNextFireTime } from "@/lib/next-fire-time";
 import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
+import { normalizeAlarm, normalizeAlarms } from "@/lib/normalize-alarm";
 import {
   isNotificationSupported,
   hasAskedPermission,
@@ -19,8 +20,6 @@ interface AlarmStore {
   alarms: Alarm[];
   groups: AlarmGroup[];
   isLoading: boolean;
-
-  // Alarm CRUD
   loadAlarms: () => Promise<void>;
   addAlarm: (partial: Partial<Alarm>) => Promise<Alarm>;
   updateAlarm: (alarm: Alarm) => Promise<void>;
@@ -28,8 +27,6 @@ interface AlarmStore {
   toggleAlarm: (alarmId: string, isEnabled: boolean) => Promise<void>;
   duplicateAlarm: (alarmId: string) => Promise<Alarm | null>;
   reorderAlarms: (alarmIds: string[]) => Promise<void>;
-
-  // Group CRUD
   loadGroups: () => Promise<void>;
   addGroup: (name: string, color: string) => Promise<AlarmGroup | null>;
   updateGroup: (group: AlarmGroup) => Promise<void>;
@@ -47,7 +44,7 @@ async function getAlarmTimeZone(): Promise<string> {
 
 function createDefaultAlarm(partial: Partial<Alarm>): Alarm {
   const now = new Date().toISOString();
-  return {
+  return normalizeAlarm({
     AlarmId: generateId(),
     Time: "07:00",
     Date: null,
@@ -73,7 +70,13 @@ function createDefaultAlarm(partial: Partial<Alarm>): Alarm {
     CreatedAt: now,
     UpdatedAt: now,
     ...partial,
-  };
+  });
+}
+
+function withNextFireTime(alarm: Alarm, timeZone: string): Alarm {
+  const normalizedAlarm = normalizeAlarm(alarm);
+  normalizedAlarm.NextFireTime = computeNextFireTime(normalizedAlarm, timeZone);
+  return normalizedAlarm;
 }
 
 export const useAlarmStore = create<AlarmStore>((set) => ({
@@ -85,15 +88,16 @@ export const useAlarmStore = create<AlarmStore>((set) => ({
     set({ isLoading: true });
     try {
       const timeZone = await getAlarmTimeZone();
-      const alarms = await ipc.listAlarms();
+      const alarms = normalizeAlarms(await ipc.listAlarms());
       const updated = await Promise.all(
-        alarms.map(async (a) => {
-          if (!a.NextFireTime && a.IsEnabled) {
-            a.NextFireTime = computeNextFireTime(a, timeZone);
-            await ipc.updateAlarm(a);
+        alarms.map(async (alarm) => {
+          if (!alarm.NextFireTime && alarm.IsEnabled) {
+            const nextAlarm = withNextFireTime(alarm, timeZone);
+            await ipc.updateAlarm(nextAlarm);
+            return nextAlarm;
           }
-          return a;
-        })
+          return normalizeAlarm(alarm);
+        }),
       );
       set({ alarms: updated });
     } finally {
@@ -102,22 +106,24 @@ export const useAlarmStore = create<AlarmStore>((set) => ({
   },
 
   addAlarm: async (partial) => {
-    const alarm = createDefaultAlarm(partial);
     const timeZone = await getAlarmTimeZone();
-    alarm.NextFireTime = computeNextFireTime(alarm, timeZone);
+    const alarm = withNextFireTime(createDefaultAlarm(partial), timeZone);
 
     if (ipc.isTauri()) {
       const created = await ipc.createAlarm(alarm);
       if (created) {
-        set((s) => ({ alarms: [...s.alarms, created] }));
-        return created;
+        const normalizedCreated = normalizeAlarm(created);
+        set((s) => ({ alarms: [...s.alarms, normalizedCreated] }));
+        if (isNotificationSupported() && !hasAskedPermission()) {
+          requestNotificationPermission();
+        }
+        return normalizedCreated;
       }
     } else {
       await ipc.createAlarm(alarm);
       set((s) => ({ alarms: [...s.alarms, alarm] }));
     }
 
-    // Prompt for notification permission on first alarm creation
     if (isNotificationSupported() && !hasAskedPermission()) {
       requestNotificationPermission();
     }
@@ -127,48 +133,55 @@ export const useAlarmStore = create<AlarmStore>((set) => ({
 
   updateAlarm: async (alarm) => {
     const timeZone = await getAlarmTimeZone();
-    alarm.NextFireTime = computeNextFireTime(alarm, timeZone);
-    await ipc.updateAlarm(alarm);
+    const updatedAlarm = withNextFireTime(alarm, timeZone);
+    const saved = await ipc.updateAlarm(updatedAlarm);
+    const nextAlarm = saved ? normalizeAlarm(saved) : updatedAlarm;
     set((s) => ({
-      alarms: s.alarms.map((a) => (a.AlarmId === alarm.AlarmId ? alarm : a)),
+      alarms: s.alarms.map((item) =>
+        item.AlarmId === nextAlarm.AlarmId ? nextAlarm : item,
+      ),
     }));
   },
 
   deleteAlarm: async (alarmId) => {
     await ipc.deleteAlarm(alarmId);
     set((s) => ({
-      alarms: s.alarms.filter((a) => a.AlarmId !== alarmId),
+      alarms: s.alarms.filter((alarm) => alarm.AlarmId !== alarmId),
     }));
   },
 
   toggleAlarm: async (alarmId, isEnabled) => {
     const updated = await ipc.toggleAlarm(alarmId, isEnabled);
-    if (updated) {
-      const timeZone = await getAlarmTimeZone();
-      updated.NextFireTime = computeNextFireTime(updated, timeZone);
-      await ipc.updateAlarm(updated);
-      set((s) => ({
-        alarms: s.alarms.map((a) => (a.AlarmId === alarmId ? updated : a)),
-      }));
-    }
+    if (!updated) return;
+    const timeZone = await getAlarmTimeZone();
+    const nextAlarm = withNextFireTime(updated, timeZone);
+    const saved = await ipc.updateAlarm(nextAlarm);
+    const normalizedSaved = saved ? normalizeAlarm(saved) : nextAlarm;
+    set((s) => ({
+      alarms: s.alarms.map((alarm) =>
+        alarm.AlarmId === alarmId ? normalizedSaved : alarm,
+      ),
+    }));
   },
 
   duplicateAlarm: async (alarmId) => {
     const duplicate = await ipc.duplicateAlarm(alarmId);
     if (duplicate) {
-      set((s) => ({ alarms: [...s.alarms, duplicate] }));
+      const normalizedDuplicate = normalizeAlarm(duplicate);
+      set((s) => ({ alarms: [...s.alarms, normalizedDuplicate] }));
+      return normalizedDuplicate;
     }
-    return duplicate;
+    return null;
   },
 
   reorderAlarms: async (alarmIds) => {
     await ipc.reorderAlarms(alarmIds);
     set((s) => {
-      const map = new Map(s.alarms.map((a) => [a.AlarmId, a]));
+      const map = new Map(s.alarms.map((alarm) => [alarm.AlarmId, alarm]));
       const ordered = alarmIds
         .map((id) => map.get(id))
         .filter(Boolean) as Alarm[];
-      const rest = s.alarms.filter((a) => !alarmIds.includes(a.AlarmId));
+      const rest = s.alarms.filter((alarm) => !alarmIds.includes(alarm.AlarmId));
       return { alarms: [...ordered, ...rest] };
     });
   },
@@ -189,8 +202,8 @@ export const useAlarmStore = create<AlarmStore>((set) => ({
   updateGroup: async (group) => {
     await ipc.updateGroup(group);
     set((s) => ({
-      groups: s.groups.map((g) =>
-        g.AlarmGroupId === group.AlarmGroupId ? group : g
+      groups: s.groups.map((item) =>
+        item.AlarmGroupId === group.AlarmGroupId ? group : item,
       ),
     }));
   },
@@ -198,9 +211,9 @@ export const useAlarmStore = create<AlarmStore>((set) => ({
   deleteGroup: async (groupId) => {
     await ipc.deleteGroup(groupId);
     set((s) => ({
-      groups: s.groups.filter((g) => g.AlarmGroupId !== groupId),
-      alarms: s.alarms.map((a) =>
-        a.GroupId === groupId ? { ...a, GroupId: null } : a
+      groups: s.groups.filter((group) => group.AlarmGroupId !== groupId),
+      alarms: s.alarms.map((alarm) =>
+        alarm.GroupId === groupId ? { ...alarm, GroupId: null } : alarm,
       ),
     }));
   },
