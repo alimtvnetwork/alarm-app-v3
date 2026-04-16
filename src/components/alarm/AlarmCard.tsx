@@ -19,19 +19,8 @@ import type { Alarm, AlarmGroup } from "@/types/alarm";
 import { RepeatType } from "@/types/alarm";
 import { useAlarmStore } from "@/stores/alarm-store";
 import { useSettingsStore } from "@/stores/settings-store";
-import { formatAlarmCardTitle, formatAlarmWaitText } from "@/lib/alarm-display";
+import { formatAlarmWaitText } from "@/lib/alarm-display";
 import { useState, useRef } from "react";
-
-const NO_SNOOZE_COUNT = 0;
-
-function formatSnoozeDetails(alarm: Alarm): string {
-  if (alarm.MaxSnoozeCount === NO_SNOOZE_COUNT) {
-    return "No snooze retries";
-  }
-
-  const retryLabel = alarm.MaxSnoozeCount === 1 ? "retry" : "retries";
-  return `Wait ${alarm.SnoozeDurationMin} min · ${alarm.MaxSnoozeCount} ${retryLabel}`;
-}
 
 function formatRepeat(alarm: Alarm, t: (key: string) => string): string {
   const { Repeat } = alarm;
@@ -119,7 +108,6 @@ const AlarmCard = ({ alarm, group, onEdit, onDelete }: AlarmCardProps) => {
   };
 
   const is24Hour = useSettingsStore((s) => s.settings.Is24Hour);
-  const systemTimeZone = useSettingsStore((s) => s.settings.SystemTimezone);
   const displayTime = (() => {
     const [h, m] = alarm.Time.split(":").map(Number);
     if (is24Hour) return alarm.Time;
@@ -127,8 +115,8 @@ const AlarmCard = ({ alarm, group, onEdit, onDelete }: AlarmCardProps) => {
     const period = h >= 12 ? "PM" : "AM";
     return `${h12}:${String(m).padStart(2, "0")} ${period}`;
   })();
-  const titleText = formatAlarmCardTitle(alarm, systemTimeZone, is24Hour, t);
-  const detailText = formatAlarmWaitText(alarm.NextFireTime, t) ?? formatRepeat(alarm, t);
+  const waitText = formatAlarmWaitText(alarm.NextFireTime, t);
+  const repeatText = formatRepeat(alarm, t);
 
   return (
     <ContextMenu>
@@ -170,13 +158,10 @@ const AlarmCard = ({ alarm, group, onEdit, onDelete }: AlarmCardProps) => {
             </span>
             <div className="flex flex-col gap-0.5">
               <span className="text-sm font-body font-medium text-foreground">
-                {titleText}
+                {alarm.Label || repeatText}
               </span>
               <span className="text-xs text-muted-foreground/80 font-body">
-                {detailText}
-              </span>
-              <span className="text-[0.7rem] font-body text-muted-foreground/70">
-                {formatSnoozeDetails(alarm)}
+                {waitText ?? repeatText}
               </span>
             </div>
           </button>
