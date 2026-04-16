@@ -149,18 +149,18 @@ const AlarmCard = ({ alarm, group, onEdit, onDelete }: AlarmCardProps) => {
 
           {/* Content — clickable to edit */}
           <button
-            className="flex flex-1 items-center gap-3 text-left"
+            className="flex flex-1 items-center gap-3 text-left min-w-0"
             onClick={() => !swipingRef.current && onEdit(alarm)}
             aria-label={t("alarm.edit") + ": " + (alarm.Label || displayTime)}
           >
-            <span className="text-[1.75rem] font-heading font-bold leading-tight text-foreground tabular-nums tracking-tight">
+            <span className="shrink-0 text-xl font-heading font-bold leading-snug text-foreground tabular-nums tracking-tight whitespace-nowrap">
               {displayTime}
             </span>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-sm font-body font-medium text-foreground">
+            <div className="flex flex-col gap-0.5 min-w-0">
+              <span className="text-sm font-body font-medium text-foreground truncate">
                 {alarm.Label || repeatText}
               </span>
-              <span className="text-xs text-muted-foreground/80 font-body">
+              <span className="text-xs text-muted-foreground/80 font-body truncate">
                 {waitText ?? repeatText}
               </span>
             </div>
