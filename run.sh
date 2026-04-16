@@ -200,7 +200,9 @@ install_rust() {
 
 install_tauri_cli() {
   echo -e "  ${C_YELLOW}Installing Tauri CLI...${C_RESET}"
+  pushd "$FRONTEND_DIR" > /dev/null
   npm install -D @tauri-apps/cli
+  popd > /dev/null
   print_success "Tauri CLI installed"
 }
 
@@ -401,12 +403,49 @@ fi
 # TAURI DEV MODE (-d)
 # ============================================================================
 if $FLAG_TAURIDEV; then
-  print_step "[3/5] Starting Tauri dev mode..."
+  print_step "[DEV] Setting up Tauri dev mode..."
   pushd "$FRONTEND_DIR" > /dev/null
 
+  # Auto-install Rust if missing
+  if ! command_exists rustc; then
+    if [[ -f "$HOME/.cargo/bin/rustc" ]]; then
+      source "$HOME/.cargo/env"
+    else
+      install_rust
+    fi
+  fi
+  print_success "Rust: $(rustc --version)"
+
+  # Auto-install dependencies if missing
   if [[ ! -d "node_modules" ]]; then
-    print_gray "Installing dependencies first..."
+    print_gray "Installing dependencies..."
     eval "$INSTALL_CMD"
+    print_success "Dependencies installed"
+  fi
+
+  # Auto-install Tauri CLI if missing
+  if ! npx tauri --version &>/dev/null; then
+    install_tauri_cli
+  fi
+  print_success "Tauri CLI: $(npx tauri --version 2>/dev/null || echo 'installed')"
+
+  # macOS: check Xcode CLT
+  if [[ "$(uname)" == "Darwin" ]]; then
+    if ! xcode-select -p &>/dev/null; then
+      print_warn "Xcode Command Line Tools not found — installing..."
+      xcode-select --install
+      echo -e "  ${C_YELLOW}Complete the Xcode CLT dialog, then re-run ./run.sh -d${C_RESET}"
+      popd > /dev/null
+      exit 0
+    fi
+  fi
+
+  # Linux: check system libraries
+  if [[ "$(uname)" == "Linux" ]]; then
+    if ! dpkg -l libwebkit2gtk-4.1-dev &>/dev/null 2>&1; then
+      print_gray "Installing Linux system libraries for Tauri..."
+      sudo apt update && sudo apt install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libasound2-dev
+    fi
   fi
 
   echo ""
