@@ -41,7 +41,7 @@ function generateId(): string {
 
 async function getAlarmTimeZone(): Promise<string> {
   const settings = await ipc.getSettings();
-  return settings.SystemTimezone;
+  return normalizeAlarmTimezone(settings.SystemTimezone);
 }
 
 function createDefaultAlarm(partial: Partial<Alarm>): Alarm {
