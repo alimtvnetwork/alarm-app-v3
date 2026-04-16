@@ -231,7 +231,7 @@ export const DEFAULT_REPEAT_PATTERN: RepeatPattern = {
 
 export const DEFAULT_SETTINGS: Settings = {
   Theme: ThemeMode.System,
-  ThemeSkin: "default",
+  ThemeSkin: "vscode",
   AccentColor: "#8b7355",
   Is24Hour: false,
   DefaultSnoozeDurationMin: 5,

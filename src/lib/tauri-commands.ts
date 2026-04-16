@@ -118,7 +118,9 @@ export async function listAlarms(): Promise<Alarm[]> {
 export async function createAlarm(
   payload: Partial<Alarm>
 ): Promise<Alarm | null> {
-  const raw = await safeInvoke<unknown>("create_alarm", { payload });
+  const raw = await safeInvoke<unknown>("create_alarm", {
+    payload: serializeAlarmForTauri(payload as Alarm),
+  });
   return raw ? normalizeAlarm(raw) : null;
 }
 

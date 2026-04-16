@@ -8,6 +8,8 @@ import type { Settings } from "@/types/alarm";
 import { ThemeMode, DEFAULT_SETTINGS } from "@/types/alarm";
 import * as ipc from "@/lib/ipc-adapter";
 
+const DEFAULT_SKIN = "vscode";
+
 interface SettingsStore {
   settings: Settings;
   isLoading: boolean;
@@ -62,12 +64,15 @@ function applyAccentColor(hex: string): void {
 
 const SKIN_CLASSES = ["skin-midnight", "skin-sunrise", "skin-ocean", "skin-forest", "skin-vscode", "skin-dracula", "skin-monokai", "skin-nord", "skin-solarized-dark", "skin-solarized-light", "skin-catppuccin"];
 
+function resolveSkin(skin?: string): string {
+  return !skin || skin === "default" ? DEFAULT_SKIN : skin;
+}
+
 function applySkin(skin: string): void {
   const root = document.documentElement;
+  const resolvedSkin = resolveSkin(skin);
   SKIN_CLASSES.forEach((cls) => root.classList.remove(cls));
-  if (skin && skin !== "default") {
-    root.classList.add(`skin-${skin}`);
-  }
+  root.classList.add(`skin-${resolvedSkin}`);
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -78,10 +83,14 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({ isLoading: true });
     try {
       const settings = await ipc.getSettings();
-      set({ settings });
-      applyThemeClass(settings.Theme);
-      applyAccentColor(settings.AccentColor);
-      applySkin(settings.ThemeSkin ?? "default");
+      const normalizedSettings = {
+        ...settings,
+        ThemeSkin: resolveSkin(settings.ThemeSkin),
+      };
+      set({ settings: normalizedSettings });
+      applyThemeClass(normalizedSettings.Theme);
+      applyAccentColor(normalizedSettings.AccentColor);
+      applySkin(normalizedSettings.ThemeSkin);
     } finally {
       set({ isLoading: false });
     }
@@ -89,16 +98,18 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   updateSettings: async (partial) => {
     const updated = await ipc.updateSettings(partial);
-    set({ settings: updated });
-    if (partial.Theme !== undefined) {
-      applyThemeClass(partial.Theme);
+    const normalizedSettings = {
+      ...updated,
+      ThemeSkin: resolveSkin(updated.ThemeSkin),
+    };
+    set({ settings: normalizedSettings });
+    if (normalizedSettings.Theme !== undefined) {
+      applyThemeClass(normalizedSettings.Theme);
     }
-    if (partial.AccentColor !== undefined) {
-      applyAccentColor(partial.AccentColor);
+    if (normalizedSettings.AccentColor !== undefined) {
+      applyAccentColor(normalizedSettings.AccentColor);
     }
-    if (partial.ThemeSkin !== undefined) {
-      applySkin(partial.ThemeSkin);
-    }
+    applySkin(normalizedSettings.ThemeSkin);
   },
 
   setTheme: async (theme) => {

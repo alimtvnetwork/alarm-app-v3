@@ -7,7 +7,7 @@ function stringifyRepeatDays(daysOfWeek: number[]): string {
   return daysOfWeek.length === 0 ? EMPTY_REPEAT_DAYS : JSON.stringify(daysOfWeek);
 }
 
-export function serializeAlarmForTauri(alarm: Alarm): Record<string, unknown> {
+export function serializeAlarmForTauri(alarm: Partial<Alarm>): Record<string, unknown> {
   const normalizedAlarm = normalizeAlarm(alarm);
   const { Repeat, ...rest } = normalizedAlarm;
 

@@ -16,6 +16,7 @@ pub struct CreateAlarmPayload {
     pub time: String,
     pub date: Option<String>,
     pub label: Option<String>,
+    pub next_fire_time: Option<String>,
     pub repeat_type: Option<String>,
     pub repeat_days_of_week: Option<String>,
     pub repeat_interval_minutes: Option<i32>,
@@ -71,8 +72,8 @@ pub async fn create_alarm(
     }
 
     conn.execute(
-        "INSERT INTO Alarms (AlarmId, Time, Date, Label, IsEnabled, RepeatType, RepeatDaysOfWeek, RepeatIntervalMinutes, RepeatCronExpression, GroupId, SnoozeDurationMin, MaxSnoozeCount, SoundFile, IsVibrationEnabled, IsGradualVolume, GradualVolumeDurationSec, AutoDismissMin, ChallengeType, ChallengeDifficulty, ChallengeShakeCount, ChallengeStepCount, CreatedAt, UpdatedAt)
-         VALUES (?1, ?2, ?3, ?4, 1, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22)",
+        "INSERT INTO Alarms (AlarmId, Time, Date, Label, IsEnabled, RepeatType, RepeatDaysOfWeek, RepeatIntervalMinutes, RepeatCronExpression, GroupId, SnoozeDurationMin, MaxSnoozeCount, SoundFile, IsVibrationEnabled, IsGradualVolume, GradualVolumeDurationSec, AutoDismissMin, ChallengeType, ChallengeDifficulty, ChallengeShakeCount, ChallengeStepCount, NextFireTime, CreatedAt, UpdatedAt)
+         VALUES (?1, ?2, ?3, ?4, 1, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23)",
         params![
             alarm_id,
             payload.time,
@@ -94,6 +95,7 @@ pub async fn create_alarm(
             payload.challenge_difficulty,
             payload.challenge_shake_count,
             payload.challenge_step_count,
+            payload.next_fire_time,
             now,
             now,
         ],
