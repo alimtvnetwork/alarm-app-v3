@@ -8,6 +8,7 @@ import type { Alarm, AlarmGroup } from "@/types/alarm";
 import { RepeatType, DEFAULT_REPEAT_PATTERN } from "@/types/alarm";
 import * as ipc from "@/lib/ipc-adapter";
 import { computeNextFireTime } from "@/lib/next-fire-time";
+import { normalizeAlarmTimezone } from "@/lib/alarm-timezone";
 import {
   isNotificationSupported,
   hasAskedPermission,
@@ -41,7 +42,7 @@ function generateId(): string {
 
 async function getAlarmTimeZone(): Promise<string> {
   const settings = await ipc.getSettings();
-  return settings.SystemTimezone;
+  return normalizeAlarmTimezone(settings.SystemTimezone);
 }
 
 function createDefaultAlarm(partial: Partial<Alarm>): Alarm {
