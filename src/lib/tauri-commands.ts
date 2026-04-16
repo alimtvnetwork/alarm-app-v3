@@ -6,7 +6,6 @@
  * When running in Tauri, they call real Rust backend commands.
  */
 
-import { toast } from "sonner";
 import type {
   Alarm,
   AlarmGroup,
@@ -15,6 +14,8 @@ import type {
   IpcErrorResponse,
 } from "@/types/alarm";
 import { normalizeAlarm, normalizeAlarms } from "@/lib/normalize-alarm";
+import { serializeAlarmForTauri } from "@/lib/ipc/serialize-alarm";
+import { AppError, ErrorCode } from "@/types/errors";
 
 const IPC_TIMEOUT_MS = 5000;
 const IS_TAURI = typeof window !== "undefined" && "__TAURI__" in window;
@@ -44,11 +45,30 @@ async function safeInvoke<T>(
     ]);
     return result as T;
   } catch (error) {
-    const message = getErrorMessage(error);
-    toast.error(message);
     console.error(`IPC ${command} failed:`, error);
-    return null;
+    throw toAppError(error, command);
   }
+}
+
+function toAppError(error: unknown, command: string): AppError {
+  if (error instanceof AppError) return error;
+  if (error instanceof Error && error.message === "timeout") {
+    return new AppError(ErrorCode.IpcTimeout, "Operation timed out — try again", {
+      source: "tauri",
+      triggerAction: command,
+    });
+  }
+  if (typeof error === "object" && error !== null && "Message" in error && "Code" in error) {
+    const ipcError = error as IpcErrorResponse;
+    return new AppError(ipcError.Code, mapErrorCodeToMessage(ipcError.Code, ipcError.Message), {
+      source: "tauri",
+      triggerAction: command,
+    });
+  }
+  return new AppError("UnhandledException", getErrorMessage(error), {
+    source: "tauri",
+    triggerAction: command,
+  });
 }
 
 function getErrorMessage(error: unknown): string {
@@ -103,7 +123,9 @@ export async function createAlarm(
 }
 
 export async function updateAlarm(alarm: Alarm): Promise<Alarm | null> {
-  const raw = await safeInvoke<unknown>("update_alarm", { alarm });
+  const raw = await safeInvoke<unknown>("update_alarm", {
+    alarm: serializeAlarmForTauri(alarm),
+  });
   return raw ? normalizeAlarm(raw) : null;
 }
 
