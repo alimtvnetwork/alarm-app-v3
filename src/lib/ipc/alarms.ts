@@ -4,6 +4,7 @@
 
 import type { Alarm } from "@/types/alarm";
 import { IS_TAURI, getMock, getTauri, safeInvoke } from "./shared";
+import { normalizeAlarm, normalizeAlarms } from "@/lib/normalize-alarm";
 
 async function _listAlarms(): Promise<Alarm[]> {
   if (!IS_TAURI) {
@@ -100,19 +101,23 @@ async function _reorderAlarms(alarmIds: string[]): Promise<void> {
 // ─── Public API ──────────────────────────────────────────────────
 
 export async function listAlarms(): Promise<Alarm[]> {
-  return (await safeInvoke(() => _listAlarms(), { source: "ipc", triggerAction: "listAlarms" })) ?? [];
+  const raw = (await safeInvoke(() => _listAlarms(), { source: "ipc", triggerAction: "listAlarms" })) ?? [];
+  return normalizeAlarms(raw);
 }
 
 export async function getAlarm(alarmId: string): Promise<Alarm | null> {
-  return safeInvoke(() => _getAlarm(alarmId), { source: "ipc", triggerAction: "getAlarm" });
+  const raw = await safeInvoke(() => _getAlarm(alarmId), { source: "ipc", triggerAction: "getAlarm" });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function createAlarm(alarm: Partial<Alarm>): Promise<Alarm | null> {
-  return safeInvoke(() => _createAlarm(alarm), { source: "ipc", triggerAction: "createAlarm" });
+  const raw = await safeInvoke(() => _createAlarm(alarm), { source: "ipc", triggerAction: "createAlarm" });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function updateAlarm(alarm: Alarm): Promise<Alarm | null> {
-  return safeInvoke(() => _updateAlarm(alarm), { source: "ipc", triggerAction: "updateAlarm" });
+  const raw = await safeInvoke(() => _updateAlarm(alarm), { source: "ipc", triggerAction: "updateAlarm" });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function deleteAlarm(alarmId: string): Promise<{ UndoToken: string } | null> {
@@ -124,11 +129,13 @@ export async function undoDeleteAlarm(undoToken: string): Promise<Alarm | null> 
 }
 
 export async function toggleAlarm(alarmId: string, isEnabled?: boolean): Promise<Alarm | null> {
-  return safeInvoke(() => _toggleAlarm(alarmId, isEnabled), { source: "ipc", triggerAction: "toggleAlarm" });
+  const raw = await safeInvoke(() => _toggleAlarm(alarmId, isEnabled), { source: "ipc", triggerAction: "toggleAlarm" });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function duplicateAlarm(alarmId: string): Promise<Alarm | null> {
-  return safeInvoke(() => _duplicateAlarm(alarmId), { source: "ipc", triggerAction: "duplicateAlarm" });
+  const raw = await safeInvoke(() => _duplicateAlarm(alarmId), { source: "ipc", triggerAction: "duplicateAlarm" });
+  return raw ? normalizeAlarm(raw) : null;
 }
 
 export async function reorderAlarms(alarmIds: string[]): Promise<void> {
