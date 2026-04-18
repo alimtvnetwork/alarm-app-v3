@@ -6,18 +6,30 @@ import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import * as adapter from "@/lib/ipc-adapter";
 import { MOCK_ALARMS, MOCK_GROUPS, MOCK_SOUNDS, MOCK_EVENTS } from "@/test/fixtures";
 import { DEFAULT_SETTINGS } from "@/types/alarm";
+import { getDB, deleteDB } from "@/lib/indexed-db";
 
-function seed() {
+function seedLocalStorage() {
   localStorage.setItem("alarm_app_alarms", JSON.stringify(MOCK_ALARMS));
   localStorage.setItem("alarm_app_groups", JSON.stringify(MOCK_GROUPS));
   localStorage.setItem("alarm_app_settings", JSON.stringify(DEFAULT_SETTINGS));
   localStorage.setItem("alarm_app_events", JSON.stringify(MOCK_EVENTS));
 }
 
+async function seedIndexedDb() {
+  const db = await getDB();
+  const tx = db.transaction(["Alarms", "AlarmGroups", "AlarmEvents"], "readwrite");
+  for (const a of MOCK_ALARMS) await tx.objectStore("Alarms").put(a);
+  for (const g of MOCK_GROUPS) await tx.objectStore("AlarmGroups").put(g);
+  for (const e of MOCK_EVENTS) await tx.objectStore("AlarmEvents").put(e);
+  await tx.done;
+}
+
 describe("ipc-adapter (web mode)", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.clear();
-    seed();
+    await deleteDB();
+    seedLocalStorage();
+    await seedIndexedDb();
   });
 
   it("isTauri returns false in web preview", () => {
@@ -130,9 +142,11 @@ describe("ipc-adapter (web mode)", () => {
 });
 
 describe("ipc-adapter error handling", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.clear();
-    seed();
+    await deleteDB();
+    seedLocalStorage();
+    await seedIndexedDb();
     vi.restoreAllMocks();
   });
 
