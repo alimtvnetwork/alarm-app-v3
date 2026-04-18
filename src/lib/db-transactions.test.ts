@@ -95,7 +95,7 @@ describe("purgeExpiredEvents", () => {
 
     const remaining = await db.getAll("AlarmEvents");
     expect(remaining).toHaveLength(1);
-    expect((remaining[0] as any).AlarmEventId).toBe("recent1");
+    expect(remaining[0]?.AlarmEventId).toBe("recent1");
   });
 
   it("returns 0 when no events are expired", async () => {
