@@ -20,3 +20,4 @@ Validate code against linter-scripts/ rules (21 CODE RED + 5 STYLE). Max 15 line
 - [Alarm App Spec Issues Audit](mem://feature/alarm-app-spec-issues) — 405 total issues found across 28 discovery phases + 42 fix phases. ALL RESOLVED.
 - [Spec Guideline Compliance Rules](mem://preference/spec-guideline-compliance-rules) — Complete set of rules from top-8 spec folders: file naming, metadata, PascalCase keys, DB naming, Rust serde, boolean prefixes, magic values, variable naming
 - [OS Service Layer](mem://feature/os-service-layer) — Background daemon spec: auto-start, 800ms polling, tray icon, notifications, wake/sleep, macOS LaunchAgent
+- [Database Naming Singular PascalCase](mem://preference/database-naming-singular-pascalcase) — Table names: singular form + PascalCase (Alarm, AlarmGroup — not Alarms, AlarmGroups)
