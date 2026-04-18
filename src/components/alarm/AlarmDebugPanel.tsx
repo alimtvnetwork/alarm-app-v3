@@ -70,7 +70,7 @@ const AlarmDebugPanel = () => {
               {enabledAlarms.map((alarm) => {
                 const fireStr = alarm.NextFireTime
                   ? new Date(alarm.NextFireTime).toLocaleString("en-GB", {
-                      timeZone: settings.SystemTimezone,
+                      timeZone: normalizeAlarmTimezone(settings.SystemTimezone),
                       month: "short",
                       day: "numeric",
                       hour: "2-digit",
