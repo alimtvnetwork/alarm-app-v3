@@ -142,9 +142,11 @@ describe("ipc-adapter (web mode)", () => {
 });
 
 describe("ipc-adapter error handling", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     localStorage.clear();
-    seed();
+    await deleteDB();
+    seedLocalStorage();
+    await seedIndexedDb();
     vi.restoreAllMocks();
   });
 
