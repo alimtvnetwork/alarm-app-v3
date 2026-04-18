@@ -75,6 +75,15 @@ function applySkin(skin: string): void {
   root.classList.add(`skin-${resolvedSkin}`);
 }
 
+function detectDeviceTimezone(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz && tz.length > 0 ? tz : null;
+  } catch {
+    return null;
+  }
+}
+
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: { ...DEFAULT_SETTINGS },
   isLoading: false,
