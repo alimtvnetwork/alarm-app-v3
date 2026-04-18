@@ -2,7 +2,7 @@
  * IPC Adapter Tests — Verifies the adapter delegates to mock-ipc in web mode.
  */
 
-import { describe, expect, it, beforeEach, vi } from "vitest";
+import { describe, expect, it, beforeEach, afterEach, vi } from "vitest";
 import * as adapter from "@/lib/ipc-adapter";
 import { MOCK_ALARMS, MOCK_GROUPS, MOCK_SOUNDS, MOCK_EVENTS } from "@/test/fixtures";
 import { DEFAULT_SETTINGS } from "@/types/alarm";
