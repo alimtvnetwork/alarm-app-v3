@@ -13,6 +13,9 @@ import { toast } from "sonner";
 import { fireAlarmNotification } from "@/lib/alarm-notification";
 
 const POLL_INTERVAL_MS = 30_000;
+// Only fire alarms whose scheduled time is within this grace window.
+// Anything older is considered "missed" — silently advance to next occurrence.
+const FIRE_GRACE_WINDOW_MS = 60_000;
 
 const AlarmChecker = () => {
   const fireAlarm = useOverlayStore((s) => s.fireAlarm);
@@ -39,28 +42,38 @@ const AlarmChecker = () => {
 
       const alarms = await ipc.listAlarms();
       const now = new Date();
+      const settings = await ipc.getSettings();
+      let didChange = false;
 
       for (const alarm of alarms) {
         if (!alarm.IsEnabled || !alarm.NextFireTime) continue;
         if (firedIdsRef.current.has(alarm.AlarmId)) continue;
 
         const fireTime = new Date(alarm.NextFireTime);
-        if (fireTime <= now) {
+        if (fireTime > now) continue;
+
+        const ageMs = now.getTime() - fireTime.getTime();
+        const isWithinGrace = ageMs <= FIRE_GRACE_WINDOW_MS;
+
+        // Always advance NextFireTime so a stale time never re-fires
+        const updated = { ...alarm };
+        updated.NextFireTime = computeNextFireTime(updated, settings.SystemTimezone);
+        if (!updated.NextFireTime) {
+          updated.IsEnabled = false;
+        }
+        await ipc.updateAlarm(updated);
+        didChange = true;
+
+        if (isWithinGrace) {
           firedIdsRef.current.add(alarm.AlarmId);
           fireAlarm(alarm);
           fireAlarmNotification(alarm.Label, alarm.Time);
-
-          const updated = { ...alarm };
-          const settings = await ipc.getSettings();
-          updated.NextFireTime = computeNextFireTime(updated, settings.SystemTimezone);
-          if (!updated.NextFireTime) {
-            updated.IsEnabled = false;
-          }
-          await ipc.updateAlarm(updated);
-          refreshAlarms();
           break;
         }
+        // else: silently skip past-missed alarm (handled by MissedAlarmBanner toast)
       }
+
+      if (didChange) refreshAlarms();
     };
 
     check();
