@@ -75,6 +75,15 @@ function applySkin(skin: string): void {
   root.classList.add(`skin-${resolvedSkin}`);
 }
 
+function detectDeviceTimezone(): string | null {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    return tz && tz.length > 0 ? tz : null;
+  } catch {
+    return null;
+  }
+}
+
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   settings: { ...DEFAULT_SETTINGS },
   isLoading: false,
@@ -83,10 +92,25 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     set({ isLoading: true });
     try {
       const settings = await ipc.getSettings();
-      const normalizedSettings = {
+      let normalizedSettings = {
         ...settings,
         ThemeSkin: resolveSkin(settings.ThemeSkin),
       };
+
+      // Auto-detect device timezone on first launch (when SystemTimezone is empty).
+      if (!normalizedSettings.SystemTimezone) {
+        const detected = detectDeviceTimezone();
+        if (detected) {
+          try {
+            const updated = await ipc.updateSettings({ SystemTimezone: detected });
+            normalizedSettings = { ...updated, ThemeSkin: resolveSkin(updated.ThemeSkin) };
+          } catch (err) {
+            console.warn("[settings-store] Failed to persist detected timezone", err);
+            normalizedSettings = { ...normalizedSettings, SystemTimezone: detected };
+          }
+        }
+      }
+
       set({ settings: normalizedSettings });
       applyThemeClass(normalizedSettings.Theme);
       applyAccentColor(normalizedSettings.AccentColor);
