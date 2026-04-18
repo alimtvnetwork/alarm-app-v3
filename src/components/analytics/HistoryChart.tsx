@@ -21,9 +21,18 @@ interface HistoryChartProps {
 }
 
 /* Outer label with connector line */
+interface LabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  outerRadius: number;
+  name: string;
+  value: number;
+}
+
 const renderLabel = ({
   cx, cy, midAngle, outerRadius, name, value,
-}: any) => {
+}: LabelProps) => {
   const RADIAN = Math.PI / 180;
   const sin = Math.sin(-midAngle * RADIAN);
   const cos = Math.cos(-midAngle * RADIAN);
