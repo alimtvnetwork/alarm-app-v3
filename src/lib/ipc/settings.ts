@@ -14,6 +14,27 @@ async function _getSettings(): Promise<Settings> {
   return (await getTauri()).getSettings() ?? DEFAULT_SETTINGS;
 }
 
+/**
+ * Map a frontend Settings field to one or more backend Settings table rows.
+ * The backend stores keys like "TimeFormat" (12h/24h) while the frontend uses Is24Hour.
+ */
+function mapSettingToBackend(key: string, value: unknown): Array<[string, string]> {
+  switch (key) {
+    case "Is24Hour":
+      return [["TimeFormat", value ? "24h" : "12h"]];
+    case "DefaultSnoozeDurationMin":
+      return [["DefaultSnoozeDuration", String(value)]];
+    // Bedtime fields are not persisted in the Settings table yet — skip silently.
+    case "BedtimeEnabled":
+    case "BedtimeTime":
+    case "BedtimeReminderMinBefore":
+    case "SleepGoalHours":
+      return [];
+    default:
+      return [[key, String(value)]];
+  }
+}
+
 async function _updateSettings(partial: Partial<Settings>): Promise<Settings> {
   if (!IS_TAURI) {
     const mock = await getMock();
@@ -21,7 +42,9 @@ async function _updateSettings(partial: Partial<Settings>): Promise<Settings> {
   }
   const tauri = await getTauri();
   for (const [key, value] of Object.entries(partial)) {
-    await tauri.updateSetting(key, String(value));
+    for (const [backendKey, backendValue] of mapSettingToBackend(key, value)) {
+      await tauri.updateSetting(backendKey, backendValue);
+    }
   }
   return (await tauri.getSettings()) ?? DEFAULT_SETTINGS;
 }
