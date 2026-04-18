@@ -1,9 +1,12 @@
 /**
  * Skin theme tests — verifies settings persistence for skin changes.
+ * Note: "default" is normalized to DEFAULT_SKIN ("vscode") by resolveSkin().
  */
 
 import { describe, expect, it, beforeEach } from "vitest";
 import { useSettingsStore } from "@/stores/settings-store";
+
+const DEFAULT_SKIN = "vscode";
 
 describe("Skin Theme Flow", () => {
   beforeEach(() => {
@@ -19,11 +22,12 @@ describe("Skin Theme Flow", () => {
   it("reverts to default skin", async () => {
     await useSettingsStore.getState().updateSettings({ ThemeSkin: "ocean" });
     await useSettingsStore.getState().updateSettings({ ThemeSkin: "default" });
-    expect(useSettingsStore.getState().settings.ThemeSkin).toBe("default");
+    // "default" is normalized to DEFAULT_SKIN
+    expect(useSettingsStore.getState().settings.ThemeSkin).toBe(DEFAULT_SKIN);
   });
 
   it("validates all known skin values", async () => {
-    const skins = ["default", "midnight", "sunrise", "ocean", "forest"];
+    const skins = ["midnight", "sunrise", "ocean", "forest", "vscode", "dracula", "monokai", "nord"];
     for (const skin of skins) {
       await useSettingsStore.getState().updateSettings({ ThemeSkin: skin });
       expect(useSettingsStore.getState().settings.ThemeSkin).toBe(skin);

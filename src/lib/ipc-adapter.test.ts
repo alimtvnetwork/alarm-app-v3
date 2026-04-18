@@ -136,6 +136,10 @@ describe("ipc-adapter error handling", () => {
     vi.restoreAllMocks();
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("listAlarms returns empty array when mock throws", async () => {
     const mock = await import("@/lib/mock-ipc");
     vi.spyOn(mock, "listAlarms").mockRejectedValue(new Error("DB crash"));
