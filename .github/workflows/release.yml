@@ -73,6 +73,7 @@ jobs:
 
   install-scripts:
     needs: build
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
