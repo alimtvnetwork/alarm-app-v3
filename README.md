@@ -6,39 +6,9 @@ Built with **Tauri 2.x · Rust · React 18 · TypeScript · Vite 5 · Tailwind C
 
 ---
 
-## Quick Start
-
-### Install
-
-```powershell
-# Windows (PowerShell)
-.\run.ps1 -i
-```
-
-```bash
-# Linux / macOS
-./run.sh -i
-```
-
-### Build and run
-
-```powershell
-# Windows (PowerShell)
-.\run.ps1
-```
-
-```bash
-# Linux / macOS
-./run.sh
-```
-
-The app will open at **http://localhost:8080**.
-
----
-
 ## Build & Run Scripts
 
-Cross-platform build scripts with auto-install, force-clean, Tauri desktop builds, and configuration via `powershell.json`.
+Cross-platform build scripts with auto-install, force-clean, Tauri desktop builds, and configuration via `powershell.json`. **Use these to build the app from source — start here if you cloned the repo.**
 
 ### Usage
 
@@ -160,29 +130,41 @@ The scripts automatically install missing prerequisites:
 
 ---
 
-## Installer Scripts
+## Quick Start (End-User Install)
 
-Pre-built installer scripts for distributing release binaries. Located in `scripts/`.
+Already have a tagged release on GitHub? Skip the build and install a prebuilt binary with one line. The installer auto-detects your OS/architecture, downloads the right asset, verifies SHA-256, and installs it.
 
-### One-Liner Install
-
-**Windows (PowerShell):**
+### Windows (PowerShell)
 
 ```powershell
 irm https://github.com/alimtvnetwork/alarm-app/releases/latest/download/install.ps1 | iex
 ```
 
-**Linux / macOS (Bash):**
+### Linux / macOS (Bash)
 
 ```bash
 curl -fsSL https://github.com/alimtvnetwork/alarm-app/releases/latest/download/install.sh | bash
 ```
 
+### Pin a specific version
+
+```powershell
+irm https://github.com/alimtvnetwork/alarm-app/releases/download/v1.0.0/install.ps1 | iex
+```
+
+```bash
+curl -fsSL https://github.com/alimtvnetwork/alarm-app/releases/download/v1.0.0/install.sh | bash
+```
+
+### Manual download
+
+Browse all assets (MSI, NSIS, AppImage, deb, DMG) and `checksums.txt` on the [latest release page](https://github.com/alimtvnetwork/alarm-app/releases/latest).
+
 ### What the installers do
 
 1. Detect platform and architecture (x64 / arm64)
 2. Download the correct release asset (`.msi`, `.dmg`, or `.AppImage`)
-3. Verify SHA-256 checksum
+3. Verify SHA-256 checksum against `checksums.txt`
 4. Install to the default location
 5. Clean up temporary files
 
