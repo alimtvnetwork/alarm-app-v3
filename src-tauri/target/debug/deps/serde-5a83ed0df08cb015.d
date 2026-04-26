@@ -1,0 +1,14 @@
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/serde-5a83ed0df08cb015.d: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/serde-794e2c02a520af9a/out/private.rs
+
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/libserde-5a83ed0df08cb015.rlib: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/serde-794e2c02a520af9a/out/private.rs
+
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/libserde-5a83ed0df08cb015.rmeta: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/serde-794e2c02a520af9a/out/private.rs
+
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/lib.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/integer128.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/mod.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/de.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.228/src/private/ser.rs:
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/serde-794e2c02a520af9a/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/serde-794e2c02a520af9a/out

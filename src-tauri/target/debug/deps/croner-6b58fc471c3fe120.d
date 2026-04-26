@@ -1,0 +1,11 @@
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/croner-6b58fc471c3fe120.d: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/errors.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/component.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/iterator.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/pattern.rs
+
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/libcroner-6b58fc471c3fe120.rlib: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/errors.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/component.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/iterator.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/pattern.rs
+
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/libcroner-6b58fc471c3fe120.rmeta: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/errors.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/component.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/iterator.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/pattern.rs
+
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/lib.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/errors.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/component.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/iterator.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/croner-2.0.7/src/pattern.rs:

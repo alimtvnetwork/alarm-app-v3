@@ -1,0 +1,14 @@
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/clang_sys-2cbe70280be2710f.d: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/macros.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/common.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/dynamic.rs
+
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/libclang_sys-2cbe70280be2710f.rlib: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/macros.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/common.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/dynamic.rs
+
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/deps/libclang_sys-2cbe70280be2710f.rmeta: /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs /Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/macros.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/common.rs /Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/dynamic.rs
+
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/lib.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/support.rs:
+/Users/ab_mahin/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/clang-sys-1.8.1/src/link.rs:
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/macros.rs:
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/common.rs:
+/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out/dynamic.rs:
+
+# env-dep:OUT_DIR=/Users/ab_mahin/Downloads/alarm-app-v3/src-tauri/target/debug/build/clang-sys-a139818d73ec6b3f/out
