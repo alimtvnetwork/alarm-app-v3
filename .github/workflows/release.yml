@@ -73,6 +73,7 @@ jobs:
 
   install-scripts:
     needs: build
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -91,6 +92,7 @@ jobs:
 
   checksums:
     needs: [build, install-scripts]
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Download all release assets
@@ -116,6 +118,7 @@ jobs:
 
   release-notes:
     needs: [build, install-scripts, checksums]
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
