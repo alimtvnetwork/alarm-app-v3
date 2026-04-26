@@ -118,6 +118,7 @@ jobs:
 
   release-notes:
     needs: [build, install-scripts, checksums]
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
