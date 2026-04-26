@@ -54,24 +54,13 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "Alarm App ${{ github.ref_name }}"
-          releaseBody: |
-            See [CHANGELOG](https://github.com/alimtvnetwork/alarm-app/blob/main/CHANGELOG.md)
-          releaseDraft: false
+          # Initial body is replaced later by the release-notes job once
+          # checksums + install scripts have been uploaded as assets.
+          releaseBody: "Building release… notes will be updated automatically when all artifacts finish uploading."
+          # Keep the release as a draft until release-notes finalises it,
+          # so users never see a half-populated page.
+          releaseDraft: true
           prerelease: false
-
-  checksums:
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/download-artifact@v4
-      - name: Generate checksums
-        run: |
-          cd artifacts
-          sha256sum * > checksums.txt
-          cat checksums.txt
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: artifacts/checksums.txt
 
   install-scripts:
     needs: build
@@ -88,3 +77,143 @@ jobs:
           files: |
             install.ps1
             install.sh
+          draft: true
+          tag_name: ${{ github.ref_name }}
+
+  checksums:
+    needs: [build, install-scripts]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all release assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          mkdir -p assets
+          gh release download "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --dir assets
+      - name: Generate checksums
+        run: |
+          cd assets
+          # Skip any existing checksums.txt to avoid recursion on re-run
+          rm -f checksums.txt
+          sha256sum * > ../checksums.txt
+          cat ../checksums.txt
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: checksums.txt
+          draft: true
+          tag_name: ${{ github.ref_name }}
+
+  release-notes:
+    needs: [build, install-scripts, checksums]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build release notes from artifacts
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ github.ref_name }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          REPO="${GITHUB_REPOSITORY}"
+          SHORT_SHA="${COMMIT_SHA:0:10}"
+          BUILD_DATE="$(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+
+          # Pull checksums.txt from the draft release
+          mkdir -p _release
+          gh release download "${VERSION}" --repo "${REPO}" \
+            --dir _release --pattern "checksums.txt" || true
+          if [ -f _release/checksums.txt ]; then
+            CHECKSUMS_BLOCK="$(cat _release/checksums.txt)"
+          else
+            CHECKSUMS_BLOCK="(checksums.txt not yet available)"
+          fi
+
+          # Read versions from repo
+          NODE_VERSION="$(node --version 2>/dev/null || echo 'n/a')"
+          RUST_VERSION="$(rustc --version 2>/dev/null | awk '{print $2}' || echo 'n/a')"
+          TAURI_VERSION="$(jq -r '.dependencies."@tauri-apps/api" // ."devDependencies"."@tauri-apps/cli" // "n/a"' package.json 2>/dev/null || echo 'n/a')"
+
+          # Build asset filenames (must match tauri-action output naming)
+          V="${VERSION#v}"
+          ASSET_WIN_MSI="alarm-app_${V}_x64-setup.msi"
+          ASSET_WIN_EXE="alarm-app_${V}_x64-setup.exe"
+          ASSET_LINUX_APPIMAGE="alarm-app_${V}_amd64.AppImage"
+          ASSET_LINUX_DEB="alarm-app_${V}_amd64.deb"
+          ASSET_MAC_DMG="alarm-app_${V}_x64.dmg"
+
+          {
+            echo "## Release Info"
+            echo ""
+            echo "| Field | Value |"
+            echo "| --- | --- |"
+            echo "| Version | \`${VERSION}\` |"
+            echo "| Commit | \`${SHORT_SHA}\` |"
+            echo "| Branch | \`${VERSION}\` |"
+            echo "| Build Date | ${BUILD_DATE} |"
+            echo "| Node | ${NODE_VERSION} |"
+            echo "| Rust | ${RUST_VERSION} |"
+            echo "| Tauri | ${TAURI_VERSION} |"
+            echo ""
+            echo "## Checksums (SHA256)"
+            echo ""
+            echo '```'
+            echo "${CHECKSUMS_BLOCK}"
+            echo '```'
+            echo ""
+            echo "## Install"
+            echo ""
+            echo "### Quick install (Windows PowerShell)"
+            echo ""
+            echo '```powershell'
+            echo "irm https://github.com/${REPO}/releases/download/${VERSION}/install.ps1 | iex"
+            echo '```'
+            echo ""
+            echo "### Quick install (Linux / macOS)"
+            echo ""
+            echo '```bash'
+            echo "curl -fsSL https://github.com/${REPO}/releases/download/${VERSION}/install.sh | bash"
+            echo '```'
+            echo ""
+            echo "### Install latest (always pulls newest release)"
+            echo ""
+            echo '```powershell'
+            echo "irm https://github.com/${REPO}/releases/latest/download/install.ps1 | iex"
+            echo '```'
+            echo ""
+            echo '```bash'
+            echo "curl -fsSL https://github.com/${REPO}/releases/latest/download/install.sh | bash"
+            echo '```'
+            echo ""
+            echo "### Manual download"
+            echo ""
+            echo "Download the appropriate installer for your platform from the **Assets** below, then run it. All assets are SHA-256 verifiable against \`checksums.txt\`."
+            echo ""
+            echo "## Assets"
+            echo ""
+            echo "| Platform | Architecture | File |"
+            echo "| --- | --- | --- |"
+            echo "| Windows | amd64 (MSI) | \`${ASSET_WIN_MSI}\` |"
+            echo "| Windows | amd64 (NSIS) | \`${ASSET_WIN_EXE}\` |"
+            echo "| Linux | amd64 (AppImage) | \`${ASSET_LINUX_APPIMAGE}\` |"
+            echo "| Linux | amd64 (deb) | \`${ASSET_LINUX_DEB}\` |"
+            echo "| macOS | universal (DMG) | \`${ASSET_MAC_DMG}\` |"
+            echo "| All | — | \`install.ps1\`, \`install.sh\`, \`checksums.txt\` |"
+            echo ""
+            echo "---"
+            echo ""
+            echo "See the full [CHANGELOG](https://github.com/${REPO}/blob/main/CHANGELOG.md)."
+          } > release-notes.md
+
+          cat release-notes.md
+      - name: Update release with rich notes and publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release edit "${GITHUB_REF_NAME}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --notes-file release-notes.md \
+            --draft=false \
+            --prerelease=false
