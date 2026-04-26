@@ -92,6 +92,7 @@ jobs:
 
   checksums:
     needs: [build, install-scripts]
+    if: ${{ always() && !cancelled() }}
     runs-on: ubuntu-latest
     steps:
       - name: Download all release assets
