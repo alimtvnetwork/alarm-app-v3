@@ -1,50 +1,103 @@
-# Alarm App
+![Alarm App icon](https://raw.githubusercontent.com/alimtvnetwork/alarm-app-v3/main/assets/icon.png)
 
-A warm, minimal cross-platform desktop alarm clock with smart scheduling, sleep tools, and wellness tracking.
+# ⏰ Alarm App
 
-Built with **Tauri 2.x · Rust · React 18 · TypeScript · Vite 5 · Tailwind CSS · Zustand · shadcn/ui · SQLite**.
+**A warm, minimal cross-platform desktop alarm clock — wake up better, sleep smarter**
+
+[![CI](https://github.com/alimtvnetwork/alarm-app-v3/actions/workflows/ci.yml/badge.svg)](https://github.com/alimtvnetwork/alarm-app-v3/actions/workflows/ci.yml)
+[![Release](https://github.com/alimtvnetwork/alarm-app-v3/actions/workflows/release.yml/badge.svg)](https://github.com/alimtvnetwork/alarm-app-v3/actions/workflows/release.yml)
+[![GitHub Release](https://img.shields.io/github/v/release/alimtvnetwork/alarm-app-v3?style=flat-square&label=version)](https://github.com/alimtvnetwork/alarm-app-v3/releases)
+[![Downloads](https://img.shields.io/github/downloads/alimtvnetwork/alarm-app-v3/total?style=flat-square&label=downloads&color=success)](https://github.com/alimtvnetwork/alarm-app-v3/releases)
+[![Tauri](https://img.shields.io/badge/Tauri-2.x-FFC131?style=flat-square&logo=tauri&logoColor=black)](https://tauri.app/)
+[![Rust](https://img.shields.io/badge/Rust-1.77+-CE412B?style=flat-square&logo=rust&logoColor=white)](https://www.rust-lang.org/)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat-square&logo=react&logoColor=black)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-5-646CFF?style=flat-square&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![Tailwind](https://img.shields.io/badge/Tailwind-3-06B6D4?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey?style=flat-square)](https://github.com/alimtvnetwork/alarm-app-v3)
+[![SQLite](https://img.shields.io/badge/SQLite-WAL-003B57?style=flat-square&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Last commit](https://img.shields.io/github/last-commit/alimtvnetwork/alarm-app-v3?style=flat-square)](https://github.com/alimtvnetwork/alarm-app-v3/commits/main)
+[![Code size](https://img.shields.io/github/languages/code-size/alimtvnetwork/alarm-app-v3?style=flat-square)](https://github.com/alimtvnetwork/alarm-app-v3)
+[![Open issues](https://img.shields.io/github/issues/alimtvnetwork/alarm-app-v3?style=flat-square)](https://github.com/alimtvnetwork/alarm-app-v3/issues)
+[![Stars](https://img.shields.io/github/stars/alimtvnetwork/alarm-app-v3?style=flat-square&logo=github)](https://github.com/alimtvnetwork/alarm-app-v3/stargazers)
+[![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen?style=flat-square)](CONTRIBUTING.md)
+[![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
+
+_Set alarms with smart repeat patterns, dismiss them with challenges, track your sleep, and wake up with gradual volume — all from a tiny native desktop app that lives in your tray._
+
+![Alarm App firing an alarm with snooze and dismiss controls](https://raw.githubusercontent.com/alimtvnetwork/alarm-app-v3/main/assets/screenshots/alarm-firing.gif)
+↑ One app, one binary — schedule, snooze, dismiss, and never miss a wake-up again.
+
+![Alarm App main dashboard with analog clock and alarm list](https://raw.githubusercontent.com/alimtvnetwork/alarm-app-v3/main/assets/screenshots/dashboard-preview.png)
+↑ Warm, minimal dashboard — analog + digital clock, today's alarms, daily quote, and one-tap groups.
+
+**🚀 Install in 10 seconds — anyone, any OS:**
+
+|     |     |
+| --- | --- |
+| **🪟 Windows · PowerShell** | <pre>irm https://raw.githubusercontent.com/alimtvnetwork/alarm-app-v3/main/install.ps1 \| iex</pre> |
+| **🐧 macOS · Linux · Bash** | <pre>curl -fsSL https://raw.githubusercontent.com/alimtvnetwork/alarm-app-v3/main/install.sh \| bash</pre> |
+
+Auto-detects your OS & architecture · Installs the latest pre-built binary (`.msi`, `.dmg`, `.AppImage`) · Falls back to a source build if no release is published · See [Installation](#installation) for flags, pinned versions, and SHA-256 verification.
+
+---
+
+## 💡 Why this exists
+
+If you've ever **slept through three "smart" phone alarms** in a row — or watched a bloated 200 MB Electron alarm app eat your battery just to ring once a day — you know the pain: cluttered UIs, buried settings, alarms that silently fail after a system sleep, and "snooze forever" buttons that defeat the whole point.
+
+**Alarm App was built out of that frustration.** It's a tiny native desktop app (≈ 5 MB, Tauri + Rust) that schedules alarms in a real OS background service, survives sleep/wake cycles, plays audio through your system mixer, fires native notifications, and forces you to actually **solve a math problem or shake your mouse** before it stops ringing. Your alarms live in a local SQLite file on your own disk — no cloud, no account, no telemetry — and the whole app starts in under a second.
 
 ---
 
-## Quick Start (End-User Install)
+## ✨ Highlights
 
-Already have a tagged release on GitHub? Skip the build and install a prebuilt binary with one line. The installer auto-detects your OS/architecture, downloads the right asset, verifies SHA-256, and installs it.
-
-### Windows (PowerShell)
-
-```powershell
-irm https://github.com/alimtvnetwork/alarm-app/releases/latest/download/install.ps1 | iex
-```
-
-### Linux / macOS (Bash)
-
-```bash
-curl -fsSL https://github.com/alimtvnetwork/alarm-app/releases/latest/download/install.sh | bash
-```
-
-### Pin a specific version
-
-```powershell
-irm https://github.com/alimtvnetwork/alarm-app/releases/download/v1.0.0/install.ps1 | iex
-```
-
-```bash
-curl -fsSL https://github.com/alimtvnetwork/alarm-app/releases/download/v1.0.0/install.sh | bash
-```
-
-### Manual download
-
-Browse all assets (MSI, NSIS, AppImage, deb, DMG) and `checksums.txt` on the [latest release page](https://github.com/alimtvnetwork/alarm-app/releases/latest).
-
-### What the installers do
-
-1. Detect platform and architecture (x64 / arm64)
-2. Download the correct release asset (`.msi`, `.dmg`, or `.AppImage`)
-3. Verify SHA-256 checksum against `checksums.txt`
-4. Install to the default location
-5. Clean up temporary files
+- ⏰ **Smart scheduling** — once, daily, weekly, custom interval, or full cron expressions — all computed in Rust and re-armed automatically across timezone changes
+- 🔊 **Native audio + gradual volume** — built-in sounds or your own `.mp3` / `.wav`, fading from whisper to wake-up over a configurable ramp
+- 💪 **Dismiss challenges** — math problem, type-a-phrase, or shake-the-mouse to stop the alarm; configurable per alarm so you can't half-asleep tap "snooze"
+- 🗂️ **Groups & drag-drop** — color-coded groups (Workdays, Weekend, Naps), one-tap enable/disable a whole group, drag to reorder
+- 🌙 **Dark mode + warm minimal theme** — cream-and-tan light palette, charcoal-and-cream dark palette, all WCAG 2.1 AA
+- 📦 **Single ~5 MB native binary** — Tauri 2.x (Rust backend, OS WebView frontend) — no Electron, no 200 MB Chromium runtime
+- 🗃️ **SQLite (WAL)** — fast, durable, zero-config local database with soft-delete, undo, and full alarm history
+- 🛌 **Sleep & wellness tools** — bedtime reminder, sleep calculator, streak tracker, ambient sound player, daily quote
+- ⌨️ **Keyboard shortcuts everywhere** — `N` new alarm, `/` search, `?` shortcut overlay, `Cmd/Ctrl + K` command palette
+- 🌐 **i18n out of the box** — English, Bengali, Japanese, Malay, Chinese (5 locales shipped)
+- 🔒 **Cross-platform native** — Windows, Linux, macOS on `amd64` and `arm64`; iOS / Android on the roadmap
+- 🛡️ **100% local & private** — no account, no cloud sync, no analytics; export/import your alarms as JSON / CSV / iCal whenever you want
 
 ---
+
+## 📑 Table of Contents
+
+- [Quick Start](#quick-start)
+- [Sample setup used in this README](#sample-setup-used-in-this-readme)
+- [Pre-flight checklist](#-pre-flight-checklist)
+- [Jump to a feature](#jump-to-a-feature)
+- [Demo](#-demo)
+- [Installation](#installation)
+- [What It Does](#what-it-does)
+- [Feature Reference](#feature-reference)
+  - [⏰ Alarms & Library](#-alarms--library)
+  - [🔔 Firing & Dismissal](#-firing--dismissal)
+  - [↩️ History & Undo](#-history--undo)
+  - [🎯 Discovery & Organization](#-discovery--organization)
+  - [🛠️ Maintenance & Debugging](#-maintenance--debugging)
+  - [⚙️ Configuration & Settings](#-configuration--settings)
+- [Troubleshooting](#troubleshooting)
+- [Feature Tree](#feature-tree)
+- [Build & Deploy](#build--deploy)
+- [Release Workflow](#release-workflow)
+- [Project Structure](#project-structure)
+- [Data Storage](#data-storage)
+- [Documentation Sync](#documentation-sync)
+- [Milestones](#milestones)
+- [Dependencies](#dependencies)
+- [Contributing](#-contributing)
+- [Author](#author)
+- [License](#license)
+
+---
+
 
 ## Build & Run Scripts
 
